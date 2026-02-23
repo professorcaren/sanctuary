@@ -267,7 +267,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         archive: [...state.archive, entry]
       };
-    case 'RESET_GAME':
+    case 'RESET_GAME': {
       const traits = action.traits || [];
       const archetype = action.archetype || 'charismatic';
       const newMeters = { ...INITIAL_STATE.meters };
@@ -306,6 +306,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         churchName: '',
         globalDoctrine: {}, // Clear doctrine on full reset
       };
+    }
     case 'UPDATE_GRANDEUR':
       return {
         ...state,
@@ -348,7 +349,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         },
         activeEvent: null,
       };
-    case 'COMPLETE_RITUAL':
+    case 'COMPLETE_RITUAL': {
       const isRepeat = state.lastRitualId === action.ritualId;
       const count = isRepeat ? state.ritualRepetitionCount + 1 : 1;
       const multiplier = count > 2 ? 1 / (1 + (count - 2) * 0.5) : 1;
@@ -370,6 +371,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ritualRepetitionCount: count,
         meters: newMeters
       };
+    }
     case 'RECRUIT_DISCIPLE':
       // @ts-ignore
       if (state.congregationSize < 5) return state;
@@ -391,7 +393,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           },
         ],
       };
-    case 'TRAIN_DISCIPLE':
+    case 'TRAIN_DISCIPLE': {
       let trainType: 'consistent' | 'contradiction' | 'new' = 'new';
       
       // @ts-ignore
@@ -439,6 +441,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           cohesion: trainType === 'contradiction' ? Math.max(0, state.meters.cohesion - 15) : state.meters.cohesion
         }
       };
+    }
     case 'PURCHASE_UPGRADE':
       return {
         ...state,
