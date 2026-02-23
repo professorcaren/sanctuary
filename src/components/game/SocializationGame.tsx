@@ -53,13 +53,13 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6"
+      className="absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 overflow-y-auto"
     >
       <div className="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-slate-950 to-black" />
       
-      <div className="w-full max-w-sm z-10 flex flex-col items-center">
+      <div className="w-full max-w-sm z-10 flex flex-col items-center pb-8">
         {/* Disciple Presence */}
-        <motion.div 
+        <motion.div
           initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
           className="text-center mb-8"
         >

@@ -162,9 +162,9 @@ export const RitualGame: React.FC = () => {
             {selectedOption?.mode === 'sequence' && <SequenceGame onComplete={handleComplete} isSacred={isSacred} />}
             {selectedOption?.mode === 'focus' && <FocusGame onComplete={handleComplete} isSacred={isSacred} />}
             
-            <button 
+            <button
               onClick={() => setPhase('prep')}
-              className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10 py-3 px-4"
+              className="absolute bottom-4 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10 py-3 px-4"
             >
               Cancel Ritual
             </button>
@@ -252,6 +252,8 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
     return Math.min(100, Math.max(0, normalizedDist * 100));
   });
 
+  const fillClipPath = useTransform(fillLevel, v => `inset(${v}% 0 0 0)`);
+
   const startTimeRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
 
@@ -307,9 +309,9 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
               <Zap className="text-slate-800" size={64} />
               {/* Filling Overlay Icon */}
               {isActive && (
-                <motion.div 
+                <motion.div
                   className="absolute inset-0 text-amber-400"
-                  style={{ clipPath: useTransform(fillLevel, v => `inset(${v}% 0 0 0)`) }}
+                  style={{ clipPath: fillClipPath }}
                 >
                   <Zap size={64} style={{ filter: inZone ? 'drop-shadow(0 0 15px #f59e0b)' : 'none' }} />
                 </motion.div>
@@ -489,7 +491,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   }, [drift]);
 
   return (
-    <div className="w-full flex flex-col items-center gap-12">
+    <div className="w-full flex flex-col items-center gap-8">
       <div className="text-center">
         <div className="text-3xl font-black text-amber-500 tracking-tighter">{Math.floor((holdTime / TARGET_TIME) * 100)}%</div>
         <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Ritual Focus</p>
@@ -509,7 +511,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
       >
         <Fingerprint size={48} />
         {isHolding && (
-          <motion.div 
+          <motion.div
             initial={{ scale: 0, opacity: 0.5 }}
             animate={{ scale: 2, opacity: 0 }}
             transition={{ repeat: Infinity, duration: 1 }}

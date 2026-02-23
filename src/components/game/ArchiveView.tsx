@@ -114,7 +114,7 @@ export const ArchiveView: React.FC = () => {
       </div>
 
       {state.archive.length === 0 && (
-        <div className="absolute inset-x-0 bottom-24 text-center px-12 animate-pulse pointer-events-none">
+        <div className="mt-4 text-center px-12 animate-pulse pointer-events-none shrink-0">
           <p className="text-[10px] text-slate-600 uppercase tracking-widest italic">
             Perform rituals and teach the flock to manifest the web
           </p>

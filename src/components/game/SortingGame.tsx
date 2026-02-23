@@ -273,7 +273,7 @@ export const SortingGame: React.FC = () => {
       </div>
 
       {activeCard && !result && (
-        <div className="flex gap-8 mt-6 z-10">
+        <div className="flex gap-8 mt-6 mb-4 z-10">
           <button
             onClick={() => handleSwipe('left')}
             className="px-4 py-2 bg-red-900/30 border border-red-800/50 rounded-xl text-red-400 text-xs font-bold uppercase tracking-wider hover:bg-red-900/50 transition-colors"

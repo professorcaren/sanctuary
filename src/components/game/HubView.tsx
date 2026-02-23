@@ -170,7 +170,7 @@ export const HubView: React.FC = () => {
       </div>
 
       {/* Evolution Button */}
-      <div className="mt-auto mb-2 w-full flex justify-center">
+      <div className="mt-auto mb-4 w-full flex justify-center">
         <UpgradeButton />
       </div>
     </div>
