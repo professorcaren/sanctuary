@@ -312,6 +312,11 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
 
   return (
     <div className="w-full flex flex-col items-center gap-12">
+      <div className="text-center">
+        <div className="text-2xl font-black text-amber-500">{Math.floor((holdTime / 300) * 100)}%</div>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest">Ritual Focus</p>
+      </div>
+
       <div className="w-full max-w-[200px] h-4 bg-slate-900 rounded-full relative overflow-hidden border border-slate-800">
         <motion.div 
           className="absolute top-0 bottom-0 w-4 bg-amber-500 shadow-[0_0_15px_#f59e0b]"
@@ -325,15 +330,12 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
         onPointerUp={() => setIsHolding(false)}
         onPointerLeave={() => setIsHolding(false)}
         animate={{ scale: isHolding ? 0.9 : 1, backgroundColor: isHolding ? '#f59e0b' : '#0f172a' }}
-        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500"
+        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none"
       >
         <Fingerprint size={48} />
       </motion.button>
 
-      <div className="text-center">
-        <div className="text-2xl font-black text-amber-500">{Math.floor((holdTime / 300) * 100)}%</div>
-        <p className="text-xs text-slate-500 uppercase tracking-widest">Hold to Center the Mind</p>
-      </div>
+      <p className="text-[10px] text-slate-600 uppercase tracking-widest animate-pulse">Hold to Center</p>
     </div>
   );
 };
