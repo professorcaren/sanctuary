@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
-import { Trash2, Sparkles, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
+import { Trash2, Sparkles, AlertCircle, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
 interface Item {
   id: string;
@@ -265,9 +265,12 @@ export const SortingGame: React.FC = () => {
               animate={{ opacity: 1, scale: 1.2 }}
               exit={{ opacity: 0, scale: 0.3, y: -20 }}
               transition={{ exit: { duration: 0.3 } }}
-              className={`absolute z-50 text-5xl font-black italic text-center ${result.type === 'correct' ? 'text-amber-400' : 'text-red-600'}`}
+              className={`absolute z-50 flex flex-col items-center gap-2 ${result.type === 'correct' ? 'text-amber-400' : 'text-red-600'}`}
             >
-              {result.label}
+              <div className="text-5xl font-black italic text-center uppercase tracking-tighter">
+                {result.label}
+              </div>
+              {result.type === 'correct' ? <CheckCircle2 size={48} /> : <XCircle size={48} />}
             </motion.div>
           )}
         </AnimatePresence>
