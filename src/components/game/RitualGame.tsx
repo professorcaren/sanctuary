@@ -442,6 +442,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   const requestRef = useRef<number | null>(null);
   const holdTimeRef = useRef(0);
   const isHoldingRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
 
   const BASE_INTENSITY = useMemo(() => {
     switch (state.stage) {
@@ -457,6 +458,10 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   const TARGET_TIME = 600;
 
   useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
     isHoldingRef.current = isHolding;
   }, [isHolding]);
 
@@ -470,7 +475,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
       setHoldTime(prev => {
         const next = prev + 1;
         holdTimeRef.current = next;
-        if (next >= TARGET_TIME) { onComplete(true); return TARGET_TIME; }
+        if (next >= TARGET_TIME) { onCompleteRef.current(true); return TARGET_TIME; }
         return next;
       });
       setDrift(prev => prev + (50 - prev) * 0.05);
@@ -487,7 +492,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   }, []);
 
   useEffect(() => {
-    if (drift < 10 || drift > 90) onComplete(false);
+    if (drift < 10 || drift > 90) onCompleteRef.current(false);
   }, [drift]);
 
   return (

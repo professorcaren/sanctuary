@@ -295,6 +295,7 @@ export const SortingGame: React.FC = () => {
 const Card: React.FC<{ item: Item; onSwipe: (dir: 'left' | 'right') => void, onExplode: () => void }> = ({ item, onSwipe, onExplode }) => {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
+  const backgroundColor = useTransform(x, [-150, 0, 150], ['#450a0a', '#0f172a', '#451a03']);
   const timeRef = useRef(2.5);
   const [timeLeft, setTimeLeft] = useState(2.5);
 
@@ -314,7 +315,7 @@ const Card: React.FC<{ item: Item; onSwipe: (dir: 'left' | 'right') => void, onE
 
   return (
     <motion.div
-      style={{ x, rotate, backgroundColor: useTransform(x, [-150, 0, 150], ['#450a0a', '#0f172a', '#451a03']) }}
+      style={{ x, rotate, backgroundColor }}
       drag="x" dragConstraints={{ left: -200, right: 200 }}
       onDragEnd={(_, info) => { if (info.offset.x > 100) onSwipe('right'); else if (info.offset.x < -100) onSwipe('left'); }}
       animate={item.isCursed ? { x: [0, -2, 2, -2, 0], transition: { repeat: Infinity, duration: 0.1 } } : {}}
