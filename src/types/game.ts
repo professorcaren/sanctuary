@@ -54,6 +54,7 @@ export interface GameState {
   buildings: string[]; 
   decisionHistory: string[]; 
   hasSeenWelcome: boolean;
+  isOracleActive: boolean;
 }
 
 export interface GameAction {

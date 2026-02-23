@@ -2,6 +2,7 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, Crown, Sparkles, Home, Landmark, Building2, Church } from 'lucide-react';
+import { OracleGuide } from '../ui/OracleGuide';
 
 const UPGRADES = [
   { id: 'basement', name: 'Basement', icon: <Home size={14} />, cost: 50, aweBonus: 5, minStage: 'cult' },
@@ -28,7 +29,8 @@ export const HubView: React.FC = () => {
   };
 
   return (
-    <div className={`h-full flex flex-col items-center p-4 bg-gradient-to-b ${getBackgroundGradient()} overflow-hidden`}>
+    <div className={`h-full flex flex-col items-center p-4 bg-gradient-to-b ${getBackgroundGradient()} overflow-hidden relative`}>
+      <OracleGuide />
       
       {/* Main Building Visualization - Shrunk */}
       <motion.div 
@@ -150,6 +152,7 @@ const UpgradeButton: React.FC = () => {
       dispatch({ type: 'ADVANCE_STAGE', stage: nextStage });
       dispatch({ type: 'UPDATE_METER', meter: 'legitimacy', value: 10 });
       dispatch({ type: 'UNLOCK_THEORY', id: 'routinization' });
+      dispatch({ type: 'TRIGGER_ORACLE' });
     }
   };
 

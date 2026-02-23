@@ -64,6 +64,7 @@ const INITIAL_STATE: GameState = {
   buildings: [],
   decisionHistory: [],
   hasSeenWelcome: false,
+  isOracleActive: false,
 };
 
 type Action =
@@ -83,7 +84,9 @@ type Action =
   | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number }
   | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number }
   | { type: 'RECORD_DECISION'; id: string }
-  | { type: 'DISMISS_WELCOME' };
+  | { type: 'DISMISS_WELCOME' }
+  | { type: 'DISMISS_ORACLE' }
+  | { type: 'TRIGGER_ORACLE' };
 
 const EVENTS: Record<string, GameEvent[]> = {
 // ... existing events
@@ -241,11 +244,22 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         startingTraits: traits,
         archive: state.archive, // Keep the archive (meta-progression)
         hasSeenWelcome: true, // Don't show welcome again after reset
+        isOracleActive: false,
       };
     case 'DISMISS_WELCOME':
       return {
         ...state,
         hasSeenWelcome: true
+      };
+    case 'DISMISS_ORACLE':
+      return {
+        ...state,
+        isOracleActive: false
+      };
+    case 'TRIGGER_ORACLE':
+      return {
+        ...state,
+        isOracleActive: true
       };
     case 'TRIGGER_SCHISM':
       return {
@@ -377,8 +391,15 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         }
       }
 
+      // Trigger Oracle every ~15 mins or manually on stage advance
+      let nextOracle = false;
+      if (!state.isOracleActive && Math.random() < 0.0001) {
+        nextOracle = true;
+      }
+
       return {
         ...state,
+        isOracleActive: nextOracle || state.isOracleActive,
         resources: state.resources + passiveIncome + discipleResources,
         congregationSize: state.congregationSize + newMember,
         activeEvent: nextEvent,
