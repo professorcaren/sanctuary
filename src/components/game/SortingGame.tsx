@@ -87,18 +87,22 @@ export const SortingGame: React.FC = () => {
     setCombo(0);
     setSessionScore(0);
     setSessionPhase('playing');
-    
-    // Law Stacking Logic
-    const newLaws: Law[] = [];
-    if (Math.random() < 0.5) { // 50% chance for at least one law
-      newLaws.push(LAWS[Math.floor(Math.random() * LAWS.length)]);
-      if (Math.random() < 0.3) { // 30% chance for a second law if first exists
-        const secondLaw = LAWS[Math.floor(Math.random() * LAWS.length)];
-        if (secondLaw.id !== newLaws[0].id) newLaws.push(secondLaw);
-      }
-    }
-    setActiveLaws(newLaws);
   };
+
+  // Generate laws whenever we enter the 'start' phase
+  useEffect(() => {
+    if (sessionPhase === 'start') {
+      const newLaws: Law[] = [];
+      if (Math.random() < 0.5) {
+        newLaws.push(LAWS[Math.floor(Math.random() * LAWS.length)]);
+        if (Math.random() < 0.3) {
+          const secondLaw = LAWS[Math.floor(Math.random() * LAWS.length)];
+          if (secondLaw.id !== newLaws[0].id) newLaws.push(secondLaw);
+        }
+      }
+      setActiveLaws(newLaws);
+    }
+  }, [sessionPhase]);
 
   const activeCard = cards[0];
 
@@ -128,7 +132,7 @@ export const SortingGame: React.FC = () => {
       dispatch({ type: 'UPDATE_METER', meter: 'awe', value: 1 });
       dispatch({ type: 'UNLOCK_THEORY', id: 'sacred_profane' });
     } else {
-      setResult({ type: 'wrong', label: 'POLLUTED' });
+      setResult({ type: 'wrong', label: '' });
       setCombo(0);
       dispatch({ type: 'UPDATE_METER', meter: 'purity', value: -10 });
     }
@@ -144,7 +148,7 @@ export const SortingGame: React.FC = () => {
   };
 
   const handleCurseExplode = () => {
-    setResult({ type: 'wrong', label: 'POLLUTED' });
+    setResult({ type: 'wrong', label: '' });
     setCombo(0);
     dispatch({ type: 'UPDATE_METER', meter: 'purity', value: -15 });
     setCards(prev => {
@@ -165,7 +169,20 @@ export const SortingGame: React.FC = () => {
         <p className="text-slate-400 text-sm mb-8 leading-relaxed">
           The law is written in the stars, but it is practiced on the earth. Sort the items to maintain the group's purity.
         </p>
-        {state.stage === 'sect' && (
+
+        {activeLaws.length > 0 && (
+          <div className="w-full max-w-xs mb-8 space-y-2">
+            <div className="text-[10px] text-amber-500 font-bold uppercase tracking-widest mb-2">Active Decrees</div>
+            {activeLaws.map(law => (
+              <div key={law.id} className="p-3 bg-amber-900/20 border border-amber-500/30 rounded-xl text-left">
+                <div className="text-xs font-bold text-amber-200">{law.title}</div>
+                <div className="text-[10px] text-slate-400">{law.description}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {state.stage === 'sect' && activeLaws.length === 0 && (
           <p className="text-amber-500/70 text-xs mb-4 italic">
             "New objects have appeared... not all things are clearly sacred or profane."
           </p>
@@ -210,30 +227,7 @@ export const SortingGame: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
-      <AnimatePresence>
-        {activeLaws.length > 0 && !state.activeEvent && (
-          <div className="absolute top-4 left-4 right-4 z-50 flex flex-col gap-2">
-            {activeLaws.map((law, idx) => (
-              <motion.div 
-                key={law.id}
-                initial={{ y: -50, opacity: 0 }} 
-                animate={{ y: 0, opacity: 1 }} 
-                exit={{ y: -50, opacity: 0 }} 
-                transition={{ delay: idx * 0.1 }}
-                className="bg-amber-600 text-black p-3 rounded-xl shadow-2xl flex items-center gap-3 border-2 border-amber-400"
-              >
-                <AlertCircle size={24} className="shrink-0" />
-                <div>
-                  <div className="font-black text-[10px] uppercase tracking-tighter">Active Law</div>
-                  <div className="font-bold text-sm leading-none">{law.title}</div>
-                  <div className="text-[10px] opacity-80 mt-1">{law.description}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </AnimatePresence>
-
+      
       <div className="mb-8 text-center z-10">
         <h2 className="text-2xl font-serif text-slate-200">Sacred Sorting</h2>
         <div className="flex justify-center gap-4 mt-1">
@@ -260,17 +254,19 @@ export const SortingGame: React.FC = () => {
         <AnimatePresence>
           {result && (
             <motion.div
-              key={result.label}
+              key={result.type + result.label}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1.2 }}
               exit={{ opacity: 0, scale: 0.3, y: -20 }}
               transition={{ exit: { duration: 0.3 } }}
               className={`absolute z-50 flex flex-col items-center gap-2 ${result.type === 'correct' ? 'text-amber-400' : 'text-red-600'}`}
             >
-              <div className="text-5xl font-black italic text-center uppercase tracking-tighter">
-                {result.label}
-              </div>
-              {result.type === 'correct' ? <CheckCircle2 size={48} /> : <XCircle size={48} />}
+              {result.type === 'correct' && (
+                <div className="text-5xl font-black italic text-center uppercase tracking-tighter">
+                  {result.label}
+                </div>
+              )}
+              {result.type === 'correct' ? <CheckCircle2 size={64} /> : <XCircle size={80} />}
             </motion.div>
           )}
         </AnimatePresence>
