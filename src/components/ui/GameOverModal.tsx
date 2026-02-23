@@ -30,8 +30,8 @@ export const GameOverModal: React.FC = () => {
   };
 
   const submitScore = () => {
-    // Replace with your Google Apps Script Web App URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+    // Live Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzgjp-X-d-byC-LQGiGiB5-kQXkCH_VWiOUdpL3yTA8D1pmmIqXZiMbBjcWzIGdsbfYEg/exec";
 
     fetch(SCRIPT_URL, {
       method: 'POST',
