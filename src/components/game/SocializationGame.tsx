@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
 import { User, Sparkles, BookOpen, Crown, UserPlus, GraduationCap, ArrowUpCircle, ShieldAlert, UserCheck } from 'lucide-react';
@@ -57,6 +57,11 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
     return scenarios[Math.floor(Math.random() * scenarios.length)];
   });
 
+  // Randomize option order so users can't memorize position
+  const shuffledOptions = useMemo(() => {
+    return [...scenario.options].sort(() => Math.random() - 0.5);
+  }, [scenario.id]);
+
   const handleChoice = (option: any) => {
     dispatch({ 
       type: 'TRAIN_DISCIPLE', 
@@ -106,7 +111,7 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
             </div>
             
             <div className="space-y-3">
-              {scenario.options.map((opt, idx) => (
+              {shuffledOptions.map((opt, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleChoice(opt)}
@@ -188,9 +193,9 @@ const DiscipleCard: React.FC<{ disciple: Disciple; onClick: () => void }> = ({ d
 
 export const SocializationGame: React.FC = () => {
   const { state, dispatch } = useGame();
-  const [selectedDiscipleId, setSelectedDiscipleId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const selectedDisciple = state.disciples.find(d => d.id === selectedDiscipleId);
+  const selectedDisciple = state.disciples.find(d => d.id === selectedId);
 
   const handleRecruit = () => {
     const names = ['Thomas', 'Sarah', 'John', 'Mary', 'Peter', 'Ruth', 'Paul', 'Esther', 'Luke', 'Martha'];
@@ -231,7 +236,7 @@ export const SocializationGame: React.FC = () => {
               <DiscipleCard 
                 key={disciple.id} 
                 disciple={disciple} 
-                onClick={() => setSelectedDiscipleId(disciple.id)} 
+                onClick={() => setSelectedId(disciple.id)} 
               />
             ))}
           </AnimatePresence>
@@ -244,11 +249,11 @@ export const SocializationGame: React.FC = () => {
       </div>
 
       <AnimatePresence>
-        {selectedDiscipleId && selectedDisciple && (
+        {selectedId && selectedDisciple && (
           <TrainingSession 
             key="session"
             disciple={selectedDisciple} 
-            onClose={() => setSelectedDiscipleId(null)} 
+            onClose={() => setSelectedId(null)} 
           />
         )}
       </AnimatePresence>
