@@ -19,7 +19,7 @@ interface RitualOption {
 const RITUAL_OPTIONS: RitualOption[] = [
   {
     id: 'chant',
-    name: 'Communal Chant',
+    name: 'Chant',
     icon: <Users size={20} />,
     theory: 'Synchronized behavior creates shared emotional states.',
     effect: 'Increases Cohesion',
@@ -29,7 +29,7 @@ const RITUAL_OPTIONS: RitualOption[] = [
   },
   {
     id: 'meditation',
-    name: 'Quiet Meditation',
+    name: 'Meditate',
     icon: <Moon size={20} />,
     theory: 'Asceticism and silence mark the boundary of the sacred.',
     effect: 'Increases Purity',
@@ -39,7 +39,7 @@ const RITUAL_OPTIONS: RitualOption[] = [
   },
   {
     id: 'incense',
-    name: 'Sacred Incense',
+    name: 'Incense',
     icon: <Sparkles size={20} />,
     theory: 'Sensory overload marks the space as "Set Apart".',
     effect: 'Increases Awe',

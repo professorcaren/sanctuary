@@ -22,11 +22,12 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
       <SchismEventModal />
       <LearningPromptModal />
       <GameOverModal />
+      
       {/* Mobile Container Constraint */}
-      <div className="w-full max-w-md h-screen flex flex-col relative bg-slate-900 shadow-2xl border-x border-slate-800">
+      <div className="w-full max-w-md h-[100dvh] flex flex-col relative bg-slate-900 shadow-2xl border-x border-slate-800 overflow-hidden">
         
         {/* Top Bar - Meters */}
-        <header className="p-4 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 z-10">
+        <header className="p-4 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 z-10 shrink-0">
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             <MeterBar type="awe" value={state.meters.awe} label="Awe" />
             <MeterBar type="cohesion" value={state.meters.cohesion} label="Cohesion" />
@@ -42,12 +43,12 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-y-auto relative min-h-0">
           {children}
         </main>
 
         {/* Bottom Navigation */}
-        <nav className="bg-slate-900 border-t border-slate-800 p-2 pb-6">
+        <nav className="bg-slate-900 border-t border-slate-800 p-2 pb-8 shrink-0">
           <div className="flex justify-around items-center">
             <NavButton 
               active={activeTab === 'hub'} 
