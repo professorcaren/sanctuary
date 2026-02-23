@@ -88,7 +88,7 @@ export const BureaucracyGame: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-900 relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
       
       <div className="mb-6 text-center z-10">
         <h2 className="text-2xl font-serif text-slate-200">Bureaucracy</h2>
@@ -96,7 +96,7 @@ export const BureaucracyGame: React.FC = () => {
       </div>
 
       {/* Desk Surface */}
-      <div className="relative w-full max-w-sm h-96 bg-[#3e2723] rounded-xl shadow-2xl border-t-4 border-[#5d4037] p-6 flex flex-col items-center">
+      <div className="relative w-full max-w-sm h-96 bg-[#3e2723] rounded-xl shadow-2xl border-t-4 border-[#5d4037] p-6 pb-12 flex flex-col items-center">
         
         {/* Paper */}
         <AnimatePresence mode="wait">
@@ -138,7 +138,7 @@ export const BureaucracyGame: React.FC = () => {
         </AnimatePresence>
 
         {/* Controls */}
-        <div className="absolute -bottom-8 flex gap-8">
+        <div className="absolute bottom-2 flex gap-8">
           <button
             onClick={() => handleStamp('denied')}
             disabled={!!stamp}

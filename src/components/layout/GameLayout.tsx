@@ -66,7 +66,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
         </main>
 
         {/* Bottom Navigation */}
-        <nav className="bg-slate-900 border-t border-slate-800 p-2 pb-8 shrink-0">
+        <nav className="bg-slate-900 border-t border-slate-800 p-2 pb-[max(2rem,env(safe-area-inset-bottom))] shrink-0">
           <div className="flex justify-around items-center">
             <NavButton 
               active={activeTab === 'hub'} 

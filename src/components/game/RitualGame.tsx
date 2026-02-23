@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimationFrame } from 'motion/react';
 import { useGame } from '../../context/GameContext';
 import { Zap, Users, Shield, Sparkles, Moon, Fingerprint, CheckCircle2, XCircle } from 'lucide-react';
@@ -57,6 +57,15 @@ export const RitualGame: React.FC = () => {
   const [lastResult, setLastResult] = useState<boolean>(false);
 
   const isSacred = state.meters.awe > 80;
+
+  const particles = useMemo(() =>
+    Array.from({ length: 20 }, (_, i) => ({
+      x: Math.random() * 400,
+      duration: 2 + Math.random() * 2,
+      delay: Math.random() * 2,
+      left: `${Math.random() * 100}%`,
+    })),
+  []);
 
   const handleComplete = (success: boolean) => {
     setLastResult(success);
@@ -132,9 +141,13 @@ export const RitualGame: React.FC = () => {
 
             {isSacred && (
               <div className="absolute inset-0 pointer-events-none">
-                 {Array.from({ length: 20 }).map((_, i) => (
-                   <motion.div key={i} className="absolute w-1 h-1 bg-amber-400 rounded-full" animate={{ y: [-20, -500], x: Math.random() * 400, opacity: [0, 1, 0] }} transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }} style={{ left: `${Math.random() * 100}%`, bottom: '0%' }} />
-                 ))}
+                {particles.map((p, i) => (
+                  <motion.div key={i} className="absolute w-1 h-1 bg-amber-400 rounded-full"
+                    animate={{ y: [-20, -500], x: p.x, opacity: [0, 1, 0] }}
+                    transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
+                    style={{ left: p.left, bottom: '0%' }}
+                  />
+                ))}
               </div>
             )}
 
@@ -240,7 +253,7 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-12" onPointerDown={handleTap}>
+    <button className="w-full flex flex-col items-center gap-12 outline-none" onPointerDown={handleTap} onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleTap(); } }}>
       <motion.div 
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -254,9 +267,16 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
         <div className="text-3xl font-black text-amber-500 tracking-tighter">{combo} / 5</div>
         <div className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{feedback || 'Tap in Rhythm'}</div>
       </div>
-    </div>
+    </button>
   );
 };
+
+const SEQUENCE_ICONS = [
+  { icon: <Users size={24} />, color: 'border-amber-800/30' },
+  { icon: <Zap size={24} />, color: 'border-emerald-800/30' },
+  { icon: <Shield size={24} />, color: 'border-blue-800/30' },
+  { icon: <Moon size={24} />, color: 'border-purple-800/30' },
+];
 
 const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
   const [round, setRound] = useState(1);
@@ -328,15 +348,15 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
         {[0, 1, 2, 3].map(i => (
           <motion.button
             key={i}
-            animate={{ 
-              scale: activeIndex === i ? 1.1 : 1, 
+            animate={{
+              scale: activeIndex === i ? 1.1 : 1,
               backgroundColor: activeIndex === i ? '#f59e0b' : '#0f172a',
-              borderColor: activeIndex === i ? '#fbbf24' : '#1e293b'
+              borderColor: activeIndex === i ? '#fbbf24' : undefined
             }}
             onPointerDown={() => handleInput(i)}
-            className="w-20 h-20 rounded-2xl border-2 flex items-center justify-center text-amber-500 active:scale-95 transition-transform touch-none shadow-xl"
+            className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center text-amber-500 active:scale-95 transition-transform touch-none shadow-xl ${activeIndex !== i ? SEQUENCE_ICONS[i].color : ''}`}
           >
-            <Users size={24} />
+            {SEQUENCE_ICONS[i].icon}
           </motion.button>
         ))}
       </div>
@@ -352,19 +372,31 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   const [isHolding, setIsHolding] = useState(false);
   const [drift, setDrift] = useState(50);
   const requestRef = useRef<number | null>(null);
+  const holdTimeRef = useRef(0);
+  const isHoldingRef = useRef(false);
 
-  const TARGET_TIME = 600; 
+  const TARGET_TIME = 600;
+
+  useEffect(() => {
+    isHoldingRef.current = isHolding;
+  }, [isHolding]);
+
+  useEffect(() => {
+    holdTimeRef.current = holdTime;
+  }, [holdTime]);
 
   const animate = () => {
-    if (isHolding) {
-      if (holdTime % 60 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
+    if (isHoldingRef.current) {
+      if (holdTimeRef.current % 60 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
       setHoldTime(prev => {
-        if (prev + 1 >= TARGET_TIME) { onComplete(true); return TARGET_TIME; }
-        return prev + 1;
+        const next = prev + 1;
+        holdTimeRef.current = next;
+        if (next >= TARGET_TIME) { onComplete(true); return TARGET_TIME; }
+        return next;
       });
       setDrift(prev => prev + (50 - prev) * 0.05);
     } else {
-      const intensity = 4 + (holdTime / 100);
+      const intensity = 4 + (holdTimeRef.current / 100);
       setDrift(prev => prev + (Math.random() - 0.5) * intensity);
     }
     requestRef.current = requestAnimationFrame(animate);
@@ -373,7 +405,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   useEffect(() => {
     requestRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(requestRef.current!);
-  }, [isHolding]);
+  }, []);
 
   useEffect(() => {
     if (drift < 10 || drift > 90) onComplete(false);

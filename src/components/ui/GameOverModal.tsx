@@ -17,8 +17,6 @@ export const GameOverModal: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showHall, setShowHall] = useState(false);
 
-  if (!state.isGameOver) return null;
-
   const points = state.archive.length;
   const spentPoints = TRAITS.filter(t => selectedTraits.includes(t.id)).reduce((acc, t) => acc + t.cost, 0);
   const remainingPoints = points - spentPoints;
@@ -56,15 +54,18 @@ export const GameOverModal: React.FC = () => {
 
   return (
     <AnimatePresence>
+      {state.isGameOver && (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-6 overflow-y-auto"
       >
         {showHall ? (
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             className="bg-slate-900 w-full h-[80vh] rounded-3xl relative flex flex-col pt-12 overflow-hidden border border-amber-500/20 shadow-2xl"
           >
              <button 
@@ -79,6 +80,7 @@ export const GameOverModal: React.FC = () => {
           <motion.div
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
             className="bg-slate-900 border border-red-900/50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center my-8"
           >
             <div className="w-20 h-20 bg-red-950/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/30">
@@ -157,6 +159,7 @@ export const GameOverModal: React.FC = () => {
           </motion.div>
         )}
       </motion.div>
+      )}
     </AnimatePresence>
   );
 };

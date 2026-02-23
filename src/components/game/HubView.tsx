@@ -36,9 +36,14 @@ export const HubView: React.FC = () => {
 
   // Generate random stable properties for the flock dots
   const flockDots = useMemo(() => {
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 9301 + 49297) * 233280;
+      return x - Math.floor(x);
+    };
+
     const genericCount = Math.max(0, state.congregationSize - state.disciples.length);
     const dots = [];
-    
+
     // Add Disciples
     state.disciples.forEach((d, i) => {
       dots.push({
@@ -57,8 +62,8 @@ export const HubView: React.FC = () => {
         id: `gen-${i}`,
         color: 'bg-amber-400/60',
         size: 'w-1 h-1',
-        orbitRadius: 100 + (Math.random() * 40),
-        duration: 20 + (Math.random() * 20),
+        orbitRadius: 100 + (seededRandom(i) * 40),
+        duration: 20 + (seededRandom(i + 1000) * 20),
         isDisciple: false
       });
     }
@@ -66,7 +71,7 @@ export const HubView: React.FC = () => {
   }, [state.congregationSize, state.disciples]);
 
   return (
-    <div className={`h-full flex flex-col items-center p-4 bg-gradient-to-b ${getBackgroundGradient()} overflow-hidden relative`}>
+    <div className={`h-full flex flex-col items-center p-4 bg-gradient-to-b ${getBackgroundGradient()} overflow-y-auto relative`}>
       <OracleGuide />
       
       {/* Main Building Visualization */}

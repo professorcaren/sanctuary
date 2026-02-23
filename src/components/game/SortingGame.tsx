@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
 import { Trash2, Sparkles, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
@@ -65,7 +65,7 @@ export const SortingGame: React.FC = () => {
   const [result, setResult] = useState<{ type: 'correct' | 'wrong', label: string } | null>(null);
   const [combo, setCombo] = useState(0);
   const [sessionPhase, setSessionPhase] = useState<'start' | 'playing' | 'end'>('start');
-  const [sessionScore, setSessionSessionScore] = useState(0);
+  const [sessionScore, setSessionScore] = useState(0);
 
   const startSession = () => {
     const filtered = ALL_ITEMS.filter(item => {
@@ -84,7 +84,7 @@ export const SortingGame: React.FC = () => {
 
     setCards(sessionCards);
     setCombo(0);
-    setSessionSessionScore(0);
+    setSessionScore(0);
     setSessionPhase('playing');
     
     if (Math.random() < 0.4) {
@@ -115,7 +115,7 @@ export const SortingGame: React.FC = () => {
     if (isCorrect) {
       setResult({ type: 'correct', label: targetType.toUpperCase() });
       setCombo(prev => prev + 1);
-      setSessionSessionScore(s => s + 1);
+      setSessionScore(s => s + 1);
       dispatch({ type: 'UPDATE_METER', meter: 'purity', value: 3 });
       dispatch({ type: 'UPDATE_METER', meter: 'awe', value: 1 });
       dispatch({ type: 'UNLOCK_THEORY', id: 'sacred_profane' });
@@ -219,8 +219,8 @@ export const SortingGame: React.FC = () => {
       </div>
 
       <div className="relative w-64 h-96 flex items-center justify-center">
-        <div className="absolute left-0 -translate-x-16 text-red-900/40 flex flex-col items-center"><Trash2 size={48} /></div>
-        <div className="absolute right-0 translate-x-16 text-amber-900/40 flex flex-col items-center"><Sparkles size={48} /></div>
+        <div className="absolute left-0 -translate-x-10 text-red-900/40 flex flex-col items-center"><Trash2 size={48} /></div>
+        <div className="absolute right-0 translate-x-10 text-amber-900/40 flex flex-col items-center"><Sparkles size={48} /></div>
 
         <AnimatePresence>
           {cards.length > 0 && (
@@ -239,6 +239,23 @@ export const SortingGame: React.FC = () => {
           </motion.div>
         )}
       </div>
+
+      {activeCard && !result && (
+        <div className="flex gap-8 mt-6 z-10">
+          <button
+            onClick={() => handleSwipe('left')}
+            className="px-4 py-2 bg-red-900/30 border border-red-800/50 rounded-xl text-red-400 text-xs font-bold uppercase tracking-wider hover:bg-red-900/50 transition-colors"
+          >
+            ← Profane
+          </button>
+          <button
+            onClick={() => handleSwipe('right')}
+            className="px-4 py-2 bg-amber-900/30 border border-amber-800/50 rounded-xl text-amber-400 text-xs font-bold uppercase tracking-wider hover:bg-amber-900/50 transition-colors"
+          >
+            Sacred →
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -246,15 +263,19 @@ export const SortingGame: React.FC = () => {
 const Card: React.FC<{ item: Item; onSwipe: (dir: 'left' | 'right') => void, onExplode: () => void }> = ({ item, onSwipe, onExplode }) => {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
+  const timeRef = useRef(2.5);
   const [timeLeft, setTimeLeft] = useState(2.5);
 
   useEffect(() => {
     if (!item.isCursed) return;
     const timer = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 0.1) { clearInterval(timer); onExplode(); return 0; }
-        return t - 0.1;
-      });
+      timeRef.current -= 0.1;
+      if (timeRef.current <= 0.1) {
+        clearInterval(timer);
+        onExplode();
+        return;
+      }
+      setTimeLeft(timeRef.current);
     }, 100);
     return () => clearInterval(timer);
   }, [item]);
@@ -262,7 +283,7 @@ const Card: React.FC<{ item: Item; onSwipe: (dir: 'left' | 'right') => void, onE
   return (
     <motion.div
       style={{ x, rotate, backgroundColor: useTransform(x, [-150, 0, 150], ['#450a0a', '#0f172a', '#451a03']) }}
-      drag="x" dragConstraints={{ left: 0, right: 0 }}
+      drag="x" dragConstraints={{ left: -200, right: 200 }}
       onDragEnd={(_, info) => { if (info.offset.x > 100) onSwipe('right'); else if (info.offset.x < -100) onSwipe('left'); }}
       animate={item.isCursed ? { x: [0, -2, 2, -2, 0], transition: { repeat: Infinity, duration: 0.1 } } : {}}
       className={`absolute w-64 h-80 rounded-2xl shadow-2xl border-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden ${item.isCursed ? 'border-red-600' : 'border-slate-800'}`}

@@ -6,8 +6,6 @@ import { Zap, Users, Scale, Shield, X, Coins } from 'lucide-react';
 export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { state } = useGame();
 
-  if (!isOpen) return null;
-
   const STATS = [
     {
       id: 'awe',
@@ -49,6 +47,7 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
 
   return (
     <AnimatePresence>
+      {isOpen && (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -58,6 +57,7 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, y: 20 }}
           className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
         >
           <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
@@ -96,6 +96,7 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
           </div>
         </motion.div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 };

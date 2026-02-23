@@ -10,6 +10,14 @@ interface Node {
   connections: string[];
 }
 
+const SHORT_LABELS: Record<string, string> = {
+  'effervescence': 'Efferv.',
+  'socialization': 'Social.',
+  'sacred_profane': 'Sacred',
+  'purity_danger': 'Purity',
+  'routinization': 'Routin.',
+};
+
 const NODES: Record<string, Node> = {
   'effervescence': { id: 'effervescence', x: 50, y: 15, connections: ['socialization'] },
   'socialization': { id: 'socialization', x: 20, y: 40, connections: [] },
@@ -74,7 +82,7 @@ export const ArchiveView: React.FC = () => {
               
               {/* Label */}
               <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold uppercase tracking-tighter ${isUnlocked ? 'text-slate-400' : 'text-slate-800'}`}>
-                {isUnlocked ? state.archive.find(a => a.id === node.id)?.title.split(' ')[0] : 'Locked'}
+                {isUnlocked ? (SHORT_LABELS[node.id] ?? node.id) : 'Locked'}
               </div>
             </motion.button>
           );
