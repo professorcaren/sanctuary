@@ -1,0 +1,93 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useGame } from '../../context/GameContext';
+import { Zap, Users, Scale, Shield, X } from 'lucide-react';
+
+export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const { state } = useGame();
+
+  if (!isOpen) return null;
+
+  const STATS = [
+    {
+      id: 'awe',
+      label: 'Awe',
+      icon: <Zap size={18} className="text-amber-400" />,
+      value: state.meters.awe,
+      desc: "The spiritual energy and mystery of your group. High Awe attracts new followers but decays faster as you become legitimate.",
+    },
+    {
+      id: 'cohesion',
+      label: 'Cohesion',
+      icon: <Users size={18} className="text-emerald-400" />,
+      value: state.meters.cohesion,
+      desc: "How tightly bound your members are. High Cohesion prevents schisms and speeds up congregation growth.",
+    },
+    {
+      id: 'legitimacy',
+      label: 'Legitimacy',
+      icon: <Scale size={18} className="text-blue-400" />,
+      value: state.meters.legitimacy,
+      desc: "How the secular world and the state perceive you. Required for institutional evolution but weighs down spiritual Awe.",
+    },
+    {
+      id: 'purity',
+      label: 'Purity',
+      icon: <Shield size={18} className="text-purple-400" />,
+      value: state.meters.purity,
+      desc: "Commitment to the group's strict boundaries. If Purity hits zero, internal infighting will dissolve the Sanctuary.",
+    },
+  ];
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-6"
+      >
+        <motion.div
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+        >
+          <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+            <X size={20} />
+          </button>
+
+          <h3 className="text-xl font-serif text-amber-100 mb-6 flex items-center gap-2">
+            Sociological Indicators
+          </h3>
+
+          <div className="space-y-6">
+            {STATS.map(stat => (
+              <div key={stat.id} className="flex gap-4 items-start">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                  {stat.icon}
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold text-slate-200">{stat.label}</span>
+                    <span className="font-mono text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                      {Math.round(stat.value)}%
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                    {stat.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-800">
+             <p className="text-[9px] text-slate-600 text-center uppercase tracking-[0.2em]">
+               Balance these forces to survive
+             </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};

@@ -14,9 +14,11 @@ import { LearningPromptModal } from '../ui/LearningPromptModal';
 import { GameOverModal } from '../ui/GameOverModal';
 import { WelcomeModal } from '../ui/WelcomeModal';
 import { NamingModal } from '../ui/NamingModal';
+import { StatsGlossaryModal } from '../ui/StatsGlossaryModal';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onTabChange }) => {
   const { state } = useGame();
+  const [isStatsOpen, setIsStatsOpen] = React.useState(false);
   const isProfane = state.meters.awe < 20 && state.stage !== 'cult';
 
   return (
@@ -26,12 +28,16 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
       <GameOverModal />
       <WelcomeModal />
       <NamingModal />
+      <StatsGlossaryModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} />
       
       {/* Mobile Container Constraint */}
       <div className="w-full max-w-md h-[100dvh] flex flex-col relative bg-slate-900 shadow-2xl border-x border-slate-800 overflow-hidden">
         
-        {/* Top Bar - Meters */}
-        <header className="p-3 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 z-10 shrink-0">
+        {/* Top Bar - Meters (Clickable) */}
+        <button 
+          onClick={() => setIsStatsOpen(true)}
+          className="p-3 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 z-10 shrink-0 text-left hover:bg-slate-800/50 transition-colors"
+        >
           <div className="flex flex-col gap-1">
             <div className="grid grid-cols-2 gap-x-4">
                <MeterBar type="awe" value={state.meters.awe} label="Awe" />
@@ -52,7 +58,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
                {state.churchName || state.stage}
              </div>
           </div>
-        </header>
+        </button>
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto relative min-h-0">
