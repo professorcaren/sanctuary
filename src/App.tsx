@@ -7,6 +7,7 @@ import { RitualGame } from './components/game/RitualGame';
 import { SocializationGame } from './components/game/SocializationGame';
 import { BureaucracyGame } from './components/game/BureaucracyGame';
 import { ArchiveView } from './components/game/ArchiveView';
+import { LeaderboardView } from './components/game/LeaderboardView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('hub');
@@ -25,6 +26,8 @@ export default function App() {
         return <BureaucracyGame />;
       case 'archive':
         return <ArchiveView />;
+      case 'leaderboard':
+        return <LeaderboardView />;
       default:
         return <HubView />;
     }

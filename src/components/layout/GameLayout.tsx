@@ -13,6 +13,7 @@ import { SchismEventModal } from '../game/SchismEventModal';
 import { LearningPromptModal } from '../ui/LearningPromptModal';
 import { GameOverModal } from '../ui/GameOverModal';
 import { WelcomeModal } from '../ui/WelcomeModal';
+import { NamingModal } from '../ui/NamingModal';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onTabChange }) => {
   const { state } = useGame();
@@ -24,6 +25,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
       <LearningPromptModal />
       <GameOverModal />
       <WelcomeModal />
+      <NamingModal />
       
       {/* Mobile Container Constraint */}
       <div className="w-full max-w-md h-[100dvh] flex flex-col relative bg-slate-900 shadow-2xl border-x border-slate-800 overflow-hidden">
@@ -46,7 +48,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
                Resources: <span className="text-amber-400 font-bold">{state.resources}</span>
              </div>
              <div className="text-[10px] font-mono text-slate-500 uppercase">
-               {state.stage}
+               {state.churchName || state.stage}
              </div>
           </div>
         </header>
@@ -88,6 +90,12 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
               onClick={() => onTabChange('archive')} 
               label="Archive" 
               icon="📚" 
+            />
+            <NavButton 
+              active={activeTab === 'leaderboard'} 
+              onClick={() => onTabChange('leaderboard')} 
+              label="Hall" 
+              icon="🏆" 
             />
             
             {(state.stage === 'denomination' || state.stage === 'megachurch') && (

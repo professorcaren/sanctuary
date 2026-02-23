@@ -55,6 +55,7 @@ export interface GameState {
   decisionHistory: string[]; 
   hasSeenWelcome: boolean;
   isOracleActive: boolean;
+  churchName: string; // New field
 }
 
 export interface GameAction {

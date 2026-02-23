@@ -65,6 +65,7 @@ const INITIAL_STATE: GameState = {
   decisionHistory: [],
   hasSeenWelcome: false,
   isOracleActive: false,
+  churchName: '',
 };
 
 type Action =
@@ -86,7 +87,8 @@ type Action =
   | { type: 'RECORD_DECISION'; id: string }
   | { type: 'DISMISS_WELCOME' }
   | { type: 'DISMISS_ORACLE' }
-  | { type: 'TRIGGER_ORACLE' };
+  | { type: 'TRIGGER_ORACLE' }
+  | { type: 'SET_CHURCH_NAME'; name: string };
 
 const EVENTS: Record<string, GameEvent[]> = {
 // ... existing events
@@ -245,6 +247,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         archive: state.archive, // Keep the archive (meta-progression)
         hasSeenWelcome: true, // Don't show welcome again after reset
         isOracleActive: false,
+        churchName: '',
       };
     case 'DISMISS_WELCOME':
       return {
@@ -255,6 +258,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       return {
         ...state,
         isOracleActive: false
+      };
+    case 'SET_CHURCH_NAME':
+      return {
+        ...state,
+        churchName: action.name
       };
     case 'TRIGGER_ORACLE':
       return {

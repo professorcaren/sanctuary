@@ -1,0 +1,115 @@
+import React, { useState, useEffect } from 'react';
+import { useGame } from '../../context/GameContext';
+import { motion, AnimatePresence } from 'motion/react';
+import { Trophy, RefreshCcw, Landmark, Users } from 'lucide-react';
+
+// NOTE: You will need to replace this with your actual Published Google Sheet CSV URL
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTshZlbIr6_6Whid9UKsq_nm_oj_ImshZshZlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh/pub?output=csv';
+
+interface LeaderboardEntry {
+  name: string;
+  stage: string;
+  members: number;
+  resources: number;
+}
+
+export const LeaderboardView: React.FC = () => {
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLeaderboard = async () => {
+    setLoading(true);
+    try {
+      // Mock data for initial testing
+      if (SHEET_CSV_URL.includes('Zlh_Zlh')) {
+         setEntries([
+           { name: 'The Silent Order', stage: 'Megachurch', members: 1200, resources: 50000 },
+           { name: "Durkheim's Dream", stage: 'Denomination', members: 450, resources: 12000 },
+           { name: "Weber's Bureaucracy", stage: 'Sect', members: 85, resources: 2100 },
+         ]);
+         setLoading(false);
+         return;
+      }
+
+      const response = await fetch(SHEET_CSV_URL);
+      const text = await response.text();
+      
+      const rows = text.split('\n').slice(1);
+      const parsed = rows.map(row => {
+        const cols = row.split(',');
+        return {
+          name: cols[1]?.replace(/"/g, '') || 'Unnamed',
+          stage: cols[2]?.replace(/"/g, '') || 'Cult',
+          members: parseInt(cols[3]) || 0,
+          resources: parseInt(cols[4]) || 0
+        };
+      }).filter(e => e.name !== 'Unnamed')
+        .sort((a, b) => b.resources - a.resources);
+
+      setEntries(parsed);
+    } catch (err) {
+      console.error("Failed to fetch leaderboard", err);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
+
+  return (
+    <div className="h-full flex flex-col p-6 bg-slate-950 overflow-hidden relative">
+      <div className="mb-6 text-center shrink-0">
+        <h2 className="text-2xl font-serif text-amber-100 flex items-center justify-center gap-2">
+          <Trophy className="text-amber-500" /> Hall of Manifestations
+        </h2>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">The greatest organizations in history</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto pb-20 space-y-3">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-40 gap-4">
+             <RefreshCcw className="text-amber-500 animate-spin" />
+             <p className="text-xs text-slate-600 italic">Reading the sacred scrolls...</p>
+          </div>
+        ) : (
+          entries.map((entry, idx) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              key={idx}
+              className={`p-4 rounded-2xl border flex items-center gap-4 ${
+                idx === 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900 border-slate-800'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm ${
+                idx === 0 ? 'bg-amber-500 text-black' : 'bg-slate-800 text-slate-500'
+              }`}>
+                {idx + 1}
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-bold text-slate-200">{entry.name}</h3>
+                  <span className="text-[10px] font-mono text-amber-500">${entry.resources}</span>
+                </div>
+                <div className="flex items-center gap-3 text-[10px] text-slate-500 uppercase tracking-wider mt-1">
+                   <div className="flex items-center gap-1"><Landmark size={10}/> {entry.stage}</div>
+                   <div className="flex items-center gap-1"><Users size={10}/> {entry.members}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+
+      <button 
+        onClick={fetchLeaderboard}
+        className="absolute bottom-24 right-6 w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-amber-500 shadow-xl border border-slate-700 active:scale-95 transition-transform"
+      >
+        <RefreshCcw size={20} />
+      </button>
+    </div>
+  );
+};

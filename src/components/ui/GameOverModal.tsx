@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
-import { Skull, RefreshCw, GraduationCap, Sparkles, Shield, Crown, Users } from 'lucide-react';
+import { Skull, RefreshCw, GraduationCap, Sparkles, Shield, Crown, Users, Trophy } from 'lucide-react';
 
 const TRAITS = [
   { id: 'charismatic', label: 'Charismatic Founder', icon: <Sparkles size={16} />, cost: 1, description: '+20 Starting Awe' },
@@ -13,6 +13,7 @@ const TRAITS = [
 export const GameOverModal: React.FC = () => {
   const { state, dispatch } = useGame();
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [submitted, setSubmitted] = useState(false);
 
   if (!state.isGameOver) return null;
 
@@ -26,6 +27,29 @@ export const GameOverModal: React.FC = () => {
     } else if (remainingPoints >= cost) {
       setSelectedTraits([...selectedTraits, id]);
     }
+  };
+
+  const submitScore = () => {
+    // Hidden Google Form submission trick placeholders
+    const FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
+    const ENTRY_NAME = "entry.123456"; 
+    const ENTRY_STAGE = "entry.789012";
+    const ENTRY_MEMBERS = "entry.345678";
+    const ENTRY_RESOURCES = "entry.901234";
+
+    const formData = new FormData();
+    formData.append(ENTRY_NAME, state.churchName || 'Unnamed');
+    formData.append(ENTRY_STAGE, state.stage);
+    formData.append(ENTRY_MEMBERS, state.congregationSize.toString());
+    formData.append(ENTRY_RESOURCES, state.resources.toString());
+
+    fetch(FORM_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    });
+
+    setSubmitted(true);
   };
 
   return (
@@ -46,7 +70,7 @@ export const GameOverModal: React.FC = () => {
 
           <h2 className="text-3xl font-serif text-white mb-4">The End</h2>
           
-          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+          <p className="text-slate-400 text-sm mb-8 leading-relaxed">
             {state.gameOverReason}
           </p>
 
@@ -79,12 +103,28 @@ export const GameOverModal: React.FC = () => {
              </div>
           </div>
 
-          <button
-            onClick={() => dispatch({ type: 'RESET_GAME', traits: selectedTraits })}
-            className="w-full py-4 bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors shadow-lg"
-          >
-            <RefreshCw size={18} /> Resurrect Group
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => dispatch({ type: 'RESET_GAME', traits: selectedTraits })}
+              className="w-full py-4 bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors shadow-lg"
+            >
+              <RefreshCw size={18} /> Resurrect Group
+            </button>
+            
+            {state.churchName && !submitted && (
+              <button
+                onClick={submitScore}
+                className="w-full py-3 bg-amber-600/20 text-amber-400 border border-amber-500/30 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-amber-600/30 transition-all"
+              >
+                <Trophy size={16} /> Submit to Hall
+              </button>
+            )}
+            {submitted && (
+              <div className="text-[10px] text-green-500 font-bold uppercase tracking-widest py-2">
+                Manifestation Recorded
+              </div>
+            )}
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
