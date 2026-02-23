@@ -222,11 +222,25 @@ export const RitualGame: React.FC = () => {
 /* --- MINI GAMES --- */
 
 const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
+  const { state } = useGame();
   const [combo, setCombo] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
   const progress = useMotionValue(0);
+  
+  // Dynamic Window: Movement=0.15 (30% total), Megachurch=0.05 (10% total)
+  const timingWindow = useMemo(() => {
+    switch (state.stage) {
+      case 'movement': return 0.15;
+      case 'cult': return 0.10;
+      case 'sect': return 0.10;
+      case 'denomination': return 0.07;
+      case 'megachurch': return 0.05;
+      default: return 0.10;
+    }
+  }, [state.stage]);
+
   const scale = useTransform(progress, [0, 1], [0.2, 1.2]);
-  const opacity = useTransform(progress, [0, 0.8, 1], [0, 1, 0]);
+  const opacity = useTransform(progress, [0, 1], [0.3, 1]);
   const startTimeRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
 
@@ -239,17 +253,23 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
 
   const handleTap = () => {
     if (!isActive) { setIsActive(true); return; }
-    const diff = Math.abs(1 - progress.get());
-    if (diff < 0.1) {
+    
+    const p = progress.get();
+    // Modulo-aware timing window
+    const isHit = p > (1 - timingWindow) || p < timingWindow;
+
+    if (isHit) {
       if (window.navigator.vibrate) window.navigator.vibrate(20);
       setCombo(c => {
-        if (c + 1 >= 5) onComplete(true);
-        return c + 1;
+        const next = c + 1;
+        if (next >= 5) onComplete(true);
+        return next;
       });
       setFeedback('PERFECT');
     } else {
       if (window.navigator.vibrate) window.navigator.vibrate([50, 50, 50]);
-      setCombo(0);
+      // Soften penalty: decrement instead of full reset
+      setCombo(c => Math.max(0, c - 1));
       setFeedback('MISS');
     }
     setTimeout(() => setFeedback(null), 400);
@@ -282,13 +302,23 @@ const SEQUENCE_ICONS = [
 ];
 
 const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
+  const { state } = useGame();
   const [round, setRound] = useState(1);
   const [sequence, setSequence] = useState<number[]>([]);
   const [playerInput, setPlayerInput] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const TOTAL_ROUNDS = 4;
+  const TOTAL_ROUNDS = useMemo(() => {
+    switch (state.stage) {
+      case 'movement': return 3;
+      case 'cult': return 4;
+      case 'sect': return 4;
+      case 'denomination': return 5;
+      case 'megachurch': return 5;
+      default: return 4;
+    }
+  }, [state.stage]);
 
   useEffect(() => {
     generateSequence(round);
@@ -342,8 +372,8 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
   return (
     <div className="w-full flex flex-col items-center gap-8">
       <div className="flex gap-2 mb-2">
-        {[1, 2, 3, 4].map(r => (
-          <div key={r} className={`w-2 h-2 rounded-full ${round >= r ? 'bg-amber-500' : 'bg-slate-800'}`} />
+        {Array.from({ length: TOTAL_ROUNDS }).map((_, i) => (
+          <div key={i} className={`w-2 h-2 rounded-full ${round > i ? 'bg-amber-500' : 'bg-slate-800'}`} />
         ))}
       </div>
       
@@ -371,12 +401,24 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
 };
 
 const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
+  const { state } = useGame();
   const [holdTime, setHoldTime] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [drift, setDrift] = useState(50);
   const requestRef = useRef<number | null>(null);
   const holdTimeRef = useRef(0);
   const isHoldingRef = useRef(false);
+
+  const BASE_INTENSITY = useMemo(() => {
+    switch (state.stage) {
+      case 'movement': return 2;
+      case 'cult': return 4;
+      case 'sect': return 4;
+      case 'denomination': return 5;
+      case 'megachurch': return 6;
+      default: return 4;
+    }
+  }, [state.stage]);
 
   const TARGET_TIME = 600;
 
@@ -399,7 +441,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
       });
       setDrift(prev => prev + (50 - prev) * 0.05);
     } else {
-      const intensity = 4 + (holdTimeRef.current / 100);
+      const intensity = BASE_INTENSITY + (holdTimeRef.current / 100);
       setDrift(prev => prev + (Math.random() - 0.5) * intensity);
     }
     requestRef.current = requestAnimationFrame(animate);
