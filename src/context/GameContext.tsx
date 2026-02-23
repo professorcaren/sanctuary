@@ -36,6 +36,13 @@ const THEORY_ARCHIVE: Record<string, ArchiveEntry> = {
     concept: 'Max Weber',
     theory: 'Charismatic authority must be transformed into legal or traditional authority to survive the leader\'s death.',
     description: 'The transition from a "Cult" to a "Denomination" requires rules, bureaucracy, and predictable rituals.'
+  },
+  'church_sect': {
+    id: 'church_sect',
+    title: 'Church-Sect Typology',
+    concept: 'Max Weber & Ernst Troeltsch',
+    theory: 'Religious groups exist on a spectrum of tension with the surrounding society.',
+    description: 'A "Sect" maintains high tension and strict boundaries, while a "Church" (or Denomination) seeks social integration and low tension.'
   }
 };
 
@@ -44,14 +51,17 @@ const INITIAL_STATE: GameState = {
     awe: 50,
     cohesion: 50,
     legitimacy: 30,
-    resources: 20,
+    resources: 100,
     purity: 80,
   },
-  stage: 'cult',
+  stage: 'movement',
+  archetype: 'charismatic',
   resources: 100,
   unlockedFeatures: ['sorting', 'ritual'],
   congregationSize: 5,
   lastRitualTime: 0,
+  lastRitualId: null,
+  ritualRepetitionCount: 0,
   activeEvent: null,
   activePrompt: null,
   seenPrompts: [],
@@ -68,6 +78,7 @@ const INITIAL_STATE: GameState = {
   churchName: '',
   lastTrainingResult: null,
   globalDoctrine: {},
+  bureaucracyGrandeurScore: 0,
 };
 
 type Action =
@@ -81,19 +92,21 @@ type Action =
   | { type: 'SHOW_PROMPT'; prompt: LearningPrompt }
   | { type: 'DISMISS_PROMPT' }
   | { type: 'UNLOCK_THEORY'; id: string }
-  | { type: 'RESET_GAME'; traits?: string[] }
+  | { type: 'RESET_GAME'; traits?: string[]; archetype?: any }
   | { type: 'TRIGGER_SCHISM' }
   | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
+  | { type: 'COMPLETE_RITUAL'; ritualId: string; meter: MeterType; bonus: number }
   | { type: 'TRAIN_DISCIPLE'; id: string; questionId: string; answerId: string; points: number }
   | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number }
   | { type: 'RECORD_DECISION'; id: string }
   | { type: 'DISMISS_WELCOME' }
   | { type: 'DISMISS_ORACLE' }
   | { type: 'TRIGGER_ORACLE' }
+  | { type: 'UPDATE_GRANDEUR'; value: number }
   | { type: 'SET_CHURCH_NAME'; name: string };
 
 const EVENTS: Record<string, GameEvent[]> = {
-  'cult': [
+  'movement': [
     {
       id: 'scandal',
       title: 'Leadership Scandal',
@@ -181,6 +194,26 @@ const EVENTS: Record<string, GameEvent[]> = {
         { text: 'Claim Religious Persecution', outcome: 'The flock is unified, but the world turns away.', effects: { cohesion: 20, legitimacy: -40 } },
       ]
     }
+  ],
+  'cult': [
+    {
+      id: 'total_institution',
+      title: 'The Total Institution',
+      description: 'Your control over every aspect of members\' lives is being challenged by families.',
+      choices: [
+        { text: 'Enforce Separation', outcome: 'The group is all they have left.', effects: { cohesion: 25, legitimacy: -20, awe: 10 } },
+        { text: 'Allow Supervised Visits', outcome: 'Tension drops, but boundaries weaken.', effects: { legitimacy: 10, cohesion: -15, purity: -10 } },
+      ]
+    },
+    {
+      id: 'prophetic_radicalization',
+      title: 'Prophetic Radicalization',
+      description: 'Your recent visions call for a complete rejection of the secular world.',
+      choices: [
+        { text: 'Preach the Apocalypse', outcome: 'Awe is absolute. The world is nothing.', effects: { awe: 30, legitimacy: -30, cohesion: 10 } },
+        { text: 'Moderate the Message', outcome: 'We stay safe, but the fire dims.', effects: { legitimacy: 10, awe: -20 } },
+      ]
+    }
   ]
 };
 
@@ -234,8 +267,25 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       };
     case 'RESET_GAME':
       const traits = action.traits || [];
+      const archetype = action.archetype || 'charismatic';
       const newMeters = { ...INITIAL_STATE.meters };
       
+      let initialResources = 100;
+      let initialUnlocked = ['sorting', 'ritual'];
+      let initialArchive: ArchiveEntry[] = [];
+
+      // Archetype Baseline Modifiers
+      if (archetype === 'mystic') {
+        newMeters.awe += 30;
+        newMeters.legitimacy -= 20;
+      } else if (archetype === 'administrator') {
+        initialResources = 500;
+        initialUnlocked = ['sorting', 'ritual', 'bureaucracy'];
+      } else if (archetype === 'scholar') {
+        initialArchive = [THEORY_ARCHIVE['sacred_profane'], THEORY_ARCHIVE['socialization']];
+      }
+
+      // Traits
       if (traits.includes('charismatic')) newMeters.awe += 20;
       if (traits.includes('organized')) newMeters.legitimacy += 20;
       if (traits.includes('zealous')) newMeters.purity += 20;
@@ -244,12 +294,20 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       return {
         ...INITIAL_STATE,
         meters: newMeters,
+        resources: initialResources,
+        unlockedFeatures: initialUnlocked,
+        archetype: archetype,
         startingTraits: traits,
-        archive: state.archive, 
+        archive: initialArchive.length > 0 ? initialArchive : state.archive, 
         hasSeenWelcome: true, 
         isOracleActive: false,
         churchName: '',
         globalDoctrine: {}, // Clear doctrine on full reset
+      };
+    case 'UPDATE_GRANDEUR':
+      return {
+        ...state,
+        bureaucracyGrandeurScore: state.bureaucracyGrandeurScore + action.value
       };
     case 'DISMISS_WELCOME':
       return {
@@ -282,6 +340,21 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           awe: Math.min(100, state.meters.awe + 20), // But focus the remaining faithful
         },
         activeEvent: null,
+      };
+    case 'COMPLETE_RITUAL':
+      const isRepeat = state.lastRitualId === action.ritualId;
+      const count = isRepeat ? state.ritualRepetitionCount + 1 : 1;
+      const multiplier = count > 2 ? 1 / (1 + (count - 2) * 0.5) : 1;
+
+      return {
+        ...state,
+        lastRitualId: action.ritualId,
+        ritualRepetitionCount: count,
+        meters: {
+          ...state.meters,
+          [action.meter]: Math.min(100, Math.max(0, state.meters[action.meter] + (action.bonus * multiplier))),
+          awe: Math.min(100, Math.max(0, state.meters.awe + (5 * multiplier)))
+        }
       };
     case 'RECRUIT_DISCIPLE':
       // @ts-ignore
@@ -386,10 +459,22 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       });
 
       // Secularization Challenge
-      const secularDecay = 0.1 + (state.meters.legitimacy / 400);
+      let secularDecay = 0.1 + (state.meters.legitimacy / 400);
+      let cultLegitimacyDecay = 0;
+      let cultAweBonus = 0;
+      let cultCohesionBonus = 0;
+
+      if (state.stage === 'cult') {
+        cultLegitimacyDecay = 0.5; // Rapid decay
+        cultAweBonus = 0.3;        // Intense focus
+        cultCohesionBonus = 0.2;   // Total institution effect
+      }
+
       const buildingBonus = state.buildings.length * 0.05;
 
-      const growthChance = state.meters.cohesion / 1000;
+      let growthChance = state.meters.cohesion / 1000;
+      if (state.stage === 'cult') growthChance *= 0.2; // Stagnant growth
+
       const newMember = Math.random() < growthChance ? 1 : 0;
       
       // Loss Condition Checks
@@ -397,9 +482,10 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         return { ...state, isGameOver: true, gameOverReason: 'INTERNAL INFIGHTING: Your lack of purity led to a civil war within the sanctuary. The group has dissolved into bitter factions.' };
       }
       if (state.meters.legitimacy <= 0) {
-        return { ...state, isGameOver: true, gameOverReason: 'STATE CRACKDOWN: Your lack of legitimacy caught the eye of the authorities. A raid has shut down your operations.' };
+        const reason = state.stage === 'cult' ? 'STATE CRACKDOWN: Your radical deviation from social norms triggered an intense state response. The movement has been forcibly dismantled.' : 'STATE CRACKDOWN: Your lack of legitimacy caught the eye of the authorities. A raid has shut down your operations.';
+        return { ...state, isGameOver: true, gameOverReason: reason };
       }
-      if (state.meters.awe <= 0 && state.stage !== 'cult') {
+      if (state.meters.awe <= 0 && state.stage !== 'movement') {
         return { ...state, isGameOver: true, gameOverReason: 'THE FADE: Without awe, your followers have realized this is just another social club. They have drifted away to seek the truly sacred elsewhere.' };
       }
 
@@ -407,7 +493,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       let newSeenEvents = state.seenEvents;
 
       if (!state.activeEvent && Math.random() < 0.005) { 
-        let pool = EVENTS[state.stage] || EVENTS['cult'];
+        let pool = EVENTS[state.stage] || EVENTS['movement'];
         let possibleEvents = pool.filter(e => !state.seenEvents.includes(e.id));
         
         if (state.stage === 'megachurch' && state.decisionHistory.includes('barred_gates')) {
@@ -431,6 +517,44 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         nextOracle = true;
       }
 
+      // Archetype Specific: Scholar faster purity gain
+      const scholarPurityBonus = state.archetype === 'scholar' ? 0.05 : 0;
+
+      // Dynamic Event: Scandal probability based on grandeur
+      let scandalProbability = 0.005;
+      if (state.bureaucracyGrandeurScore > 100) {
+        scandalProbability += 0.01;
+      }
+
+      if (!state.activeEvent && Math.random() < scandalProbability) { 
+        let pool = EVENTS[state.stage] || EVENTS['movement'];
+        
+        // Prioritize Scandal if grandeur is high
+        if (state.bureaucracyGrandeurScore > 50) {
+           const scandal = pool.find(e => e.id === 'scandal');
+           if (scandal && !state.seenEvents.includes(scandal.id)) {
+              nextEvent = scandal;
+           }
+        }
+
+        if (!nextEvent) {
+          let possibleEvents = pool.filter(e => !state.seenEvents.includes(e.id));
+          if (state.stage === 'megachurch' && state.decisionHistory.includes('barred_gates')) {
+             const scandal = EVENTS['megachurch'].find(e => e.id === 'past_scandal_exposed');
+             if (scandal && !state.seenEvents.includes(scandal.id)) {
+                nextEvent = scandal;
+             }
+          }
+
+          if (!nextEvent && possibleEvents.length > 0) {
+            nextEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
+            newSeenEvents = [...state.seenEvents, nextEvent.id];
+          } else if (!nextEvent && state.seenEvents.length > 0) {
+            newSeenEvents = [];
+          }
+        }
+      }
+
       return {
         ...state,
         isOracleActive: nextOracle || state.isOracleActive,
@@ -440,8 +564,10 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         seenEvents: newSeenEvents,
         meters: {
             ...state.meters,
-            awe: Math.max(0, state.meters.awe - secularDecay + discipleAwe + buildingBonus),
-            purity: Math.min(100, state.meters.purity + disciplePurity)
+            awe: Math.max(0, Math.min(100, state.meters.awe - secularDecay + discipleAwe + buildingBonus + cultAweBonus)),
+            purity: Math.max(0, Math.min(100, state.meters.purity + disciplePurity + scholarPurityBonus)),
+            legitimacy: Math.max(0, Math.min(100, state.meters.legitimacy - cultLegitimacyDecay)),
+            cohesion: Math.max(0, Math.min(100, state.meters.cohesion + cultCohesionBonus))
         }
       };
     default:

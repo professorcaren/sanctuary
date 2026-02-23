@@ -36,14 +36,20 @@ export interface Disciple {
   doctrine: Record<string, string>; 
 }
 
+export type StageType = 'movement' | 'cult' | 'sect' | 'denomination' | 'megachurch';
+export type ArchetypeType = 'mystic' | 'scholar' | 'administrator' | 'charismatic';
+
 export interface GameState {
   meters: Record<MeterType, number>;
-  stage: 'cult' | 'sect' | 'denomination' | 'megachurch';
+  stage: StageType;
+  archetype: ArchetypeType;
   resources: number;
   unlockedFeatures: string[];
   congregationSize: number;
   disciples: Disciple[];
   lastRitualTime: number;
+  lastRitualId: string | null;
+  ritualRepetitionCount: number;
   activeEvent: GameEvent | null;
   activePrompt: LearningPrompt | null;
   seenPrompts: string[];
@@ -59,6 +65,7 @@ export interface GameState {
   churchName: string;
   lastTrainingResult: 'consistent' | 'contradiction' | 'new' | null;
   globalDoctrine: Record<string, string>; // Church-wide consistent answers
+  bureaucracyGrandeurScore: number;
 }
 
 export interface GameAction {

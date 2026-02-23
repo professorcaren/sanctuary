@@ -19,7 +19,7 @@ import { StatsGlossaryModal } from '../ui/StatsGlossaryModal';
 export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onTabChange }) => {
   const { state } = useGame();
   const [isStatsOpen, setIsStatsOpen] = React.useState(false);
-  const isProfane = state.meters.awe < 20 && state.stage !== 'cult';
+  const isProfane = state.meters.awe < 20 && state.stage !== 'movement';
 
   return (
     <div className={`min-h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden flex flex-col items-center transition-all duration-1000 ${isProfane ? 'grayscale sepia-[0.2] brightness-75' : ''}`}>

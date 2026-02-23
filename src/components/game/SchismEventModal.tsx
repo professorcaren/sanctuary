@@ -27,6 +27,12 @@ export const SchismEventModal: React.FC = () => {
     if (event.id === 'outsider' && choice.text === 'Bar the gates') {
        dispatch({ type: 'RECORD_DECISION', id: 'barred_gates' });
     }
+    if (event.id === 'factionalism' && choice.text === 'Side with the Strict') {
+       dispatch({ type: 'RECORD_DECISION', id: 'strict_purity' });
+    }
+    if (event.id === 'prophecy' && choice.text === 'Double Down') {
+       dispatch({ type: 'RECORD_DECISION', id: 'doubled_down' });
+    }
 
     dispatch({ type: 'RESOLVE_EVENT' });
     

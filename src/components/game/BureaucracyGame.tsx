@@ -14,55 +14,48 @@ interface Document {
   };
 }
 
-const DOCUMENTS: Document[] = [
-  {
-    id: '1',
-    title: 'Purchase Gold Candlesticks',
-    body: 'The altar looks bare. We need more grandeur to impress the visitors.',
-    cost: 50,
+const ADJECTIVES = ['Golden', 'Sacred', 'Ancient', 'Velvet', 'Marble', 'Bronze', 'Silk', 'Crystal'];
+const ITEMS = ['Candlesticks', 'Veils', 'Bells', 'Robes', 'Scrolls', 'Statues', 'Incense Burners', 'Prayer Rugs'];
+const SCHOLAR_ITEMS = ['Scrolls', 'Manuscripts', 'Doctrine Books', 'Archive Cases', 'Ancient Lexicons'];
+const MYSTIC_ITEMS = ['Relics', 'Incense Burners', 'Visions Crystals', 'Sacred Masks', 'Altar Stones'];
+const ACTIONS = ['Purchase', 'Commission', 'Repair', 'Consecrate', 'Import'];
+const REASONS = ['to impress the visitors', 'for the coming festival', 'to appease the elders', 'as a sign of devotion', 'to replace the old ones'];
+
+const generateDocument = (stage: string, archetype: string): Document => {
+  let pool = ITEMS;
+  if (archetype === 'scholar') pool = SCHOLAR_ITEMS;
+  else if (archetype === 'mystic') pool = MYSTIC_ITEMS;
+
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+  const reason = REASONS[Math.floor(Math.random() * REASONS.length)];
+  
+  const isLarge = Math.random() > 0.7;
+  const cost = isLarge ? Math.floor(Math.random() * 500) + 200 : Math.floor(Math.random() * 100) + 50;
+  
+  return {
+    id: Math.random().toString(36).substr(2, 9),
+    title: `${action} ${adj} ${item}`,
+    body: `The ${stage === 'megachurch' ? 'Board' : 'Elders'} suggest we ${action.toLowerCase()} new ${adj.toLowerCase()} ${item.toLowerCase()} ${reason}.`,
+    cost: cost,
     effects: {
-      approve: { text: 'The altar shines!', changes: { awe: 5, resources: -50 } },
-      deny: { text: 'Frugality is a virtue.', changes: { resources: 0, awe: -2 } }
+      approve: { 
+        text: 'It shall be done.', 
+        changes: { awe: Math.floor(cost / 20), resources: -cost } 
+      },
+      deny: { 
+        text: 'We must be frugal.', 
+        changes: { resources: 0, awe: -2, cohesion: 1 } 
+      }
     }
-  },
-  {
-    id: '2',
-    title: 'Marriage Request',
-    body: 'Brother Thomas wishes to marry Sister Mary. They are cousins.',
-    cost: 10,
-    effects: {
-      approve: { text: 'Love wins (sort of).', changes: { cohesion: 5, purity: -5, resources: -10 } },
-      deny: { text: 'Purity maintained.', changes: { purity: 5, cohesion: -5 } }
-    }
-  },
-  {
-    id: '3',
-    title: 'Tax Exemption Form',
-    body: 'The state requires us to file form 501(c)(3) to keep our status.',
-    cost: 100,
-    effects: {
-      approve: { text: 'Legal status secured.', changes: { legitimacy: 10, resources: -100 } },
-      deny: { text: 'We answer only to God.', changes: { legitimacy: -20, awe: 5 } }
-    }
-  },
-  {
-    id: '4',
-    title: 'Missionary Expedition',
-    body: 'Send missionaries to the neighboring town.',
-    cost: 200,
-    effects: {
-      approve: { text: 'The word spreads.', changes: { congregationSize: 5, resources: -200 } },
-      deny: { text: 'Focus on home first.', changes: { cohesion: 2 } }
-    }
-  }
-];
+  };
+};
 
 export const BureaucracyGame: React.FC = () => {
   const { state, dispatch } = useGame();
-  const [docIndex, setDocIndex] = useState(0);
+  const [doc, setDoc] = useState<Document>(() => generateDocument(state.stage, state.archetype));
   const [stamp, setStamp] = useState<'approved' | 'denied' | null>(null);
-
-  const doc = DOCUMENTS[docIndex % DOCUMENTS.length];
 
   const handleStamp = (type: 'approved' | 'denied') => {
     if (stamp) return;
@@ -74,6 +67,10 @@ export const BureaucracyGame: React.FC = () => {
     Object.entries(effect.changes).forEach(([key, value]) => {
       if (key === 'resources') {
         dispatch({ type: 'ADD_RESOURCE', amount: value as number });
+        // Track grandeur for dynamic scandal event
+        if (type === 'approved' && doc.cost > 100) {
+          dispatch({ type: 'UPDATE_GRANDEUR', value: Math.floor(doc.cost / 10) });
+        }
       } else if (key === 'congregationSize') {
         dispatch({ type: 'ADD_MEMBERS', amount: value as number });
       } else {
@@ -83,7 +80,7 @@ export const BureaucracyGame: React.FC = () => {
 
     setTimeout(() => {
       setStamp(null);
-      setDocIndex(prev => prev + 1);
+      setDoc(generateDocument(state.stage, state.archetype));
     }, 1500);
   };
 

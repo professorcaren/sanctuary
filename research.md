@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-**Sanctuary** is an idle/incremental management game that teaches the sociology of religion through interactive systems. Players guide a religious movement from a small cult through sect, denomination, and megachurch stages, experiencing the sociological tensions that shape real institutions. Built as a single-page React application, it runs entirely in the browser with an optional Google Sheets leaderboard backend.
+**Sanctuary** is an idle/incremental management game that teaches the sociology of religion through interactive systems. Players guide a religious movement from a small cult through sect, denomination, and megachurch stages, experiencing the sociological tensions that shape real institutions. Built as a single-page React application, it runs entirely in the browser with a Google Sheets-backed "Hall of Manifestations" leaderboard.
 
 **Stack:** React 19 + TypeScript + Vite 6.2 + Tailwind CSS 4.1 + Motion (Framer Motion) + Lucide React icons
 **External Services:** Google Gemini API (Oracle guide), Google Sheets (leaderboard via Apps Script webhook)
@@ -15,16 +15,16 @@
 ```
 sanctuary/
 ├── src/
-│   ├── App.tsx                          # Root component, tab-based navigation (7 views)
+│   ├── App.tsx                          # Root component, tab-based navigation (6-7 views)
 │   ├── main.tsx                         # React root renderer
 │   ├── index.css                        # Tailwind imports
 │   ├── context/
-│   │   └── GameContext.tsx              # ALL game state + reducer + tick loop (~600 lines)
+│   │   └── GameContext.tsx              # ALL game state + reducer + tick loop (~650 lines)
 │   ├── types/
 │   │   └── game.ts                     # TypeScript interfaces for full game state
 │   ├── components/
 │   │   ├── layout/
-│   │   │   └── GameLayout.tsx          # Shell: top bar (meters) + content + bottom nav
+│   │   │   └── GameLayout.tsx          # Shell: top bar (meters/stats) + content + bottom nav
 │   │   ├── game/
 │   │   │   ├── HubView.tsx             # Central sanctuary with orbiting flock + buildings
 │   │   │   ├── SortingGame.tsx         # Sacred/profane card classification
@@ -32,14 +32,14 @@ sanctuary/
 │   │   │   ├── SocializationGame.tsx   # Disciple recruitment + doctrine training
 │   │   │   ├── BureaucracyGame.tsx     # Document approval (unlocks at denomination)
 │   │   │   ├── ArchiveView.tsx         # Theory knowledge graph
-│   │   │   ├── LeaderboardView.tsx     # Google Sheets-backed scoreboard
+│   │   │   ├── LeaderboardView.tsx     # "Hall of Manifestations" list view
 │   │   │   └── SchismEventModal.tsx    # Crisis event decision UI
 │   │   └── ui/
 │   │       ├── MeterBar.tsx            # Animated stat bar with spring physics
 │   │       ├── StatsGlossaryModal.tsx  # Sociological definitions overlay
 │   │       ├── WelcomeModal.tsx        # First-play onboarding
 │   │       ├── NamingModal.tsx         # Church naming (triggers at sect stage)
-│   │       ├── GameOverModal.tsx       # Death screen + prestige trait selection
+│   │       ├── GameOverModal.tsx       # Death screen + prestige traits + leaderboard sub
 │   │       ├── LearningPromptModal.tsx # Contextual sociology lessons
 │   │       └── OracleGuide.tsx         # Random AI-driven gameplay hints
 ├── index.html                           # Entry point
@@ -91,16 +91,36 @@ Each tick performs these calculations in order:
    - Legitimacy ≤ 0 → "STATE CRACKDOWN"
    - Awe ≤ 0 (non-cult only) → "THE FADE"
 
-### 3.3 Stage Progression
+### 3.3 Stage Progression & Branching
+
+The game no longer follows a strictly linear path. The movement begins as an informal "Circle of Seekers" and can branch into a high-tension "Cult" or a more integrated "Sect" based on player decisions.
+
+**Founder Archetypes:**
+Upon starting, players select a background that fundamentally alters the starting state and gameplay:
+- **The Charismatic:** Balanced starting stats.
+- **The Mystic:** Starts with +30 Awe but -20 Legitimacy. Influences bureaucracy toward "Sacred Relics".
+- **The Scholar:** Starts with two theories unlocked and faster Purity gain. Influences bureaucracy toward "Ancient Manuscripts".
+- **The Administrator:** Starts with Bureaucracy unlocked and +400 Resources.
 
 | Stage | Advance Cost | Meter Requirement | Bonus on Advance | Theory Unlocked |
 |-------|-------------|-------------------|-------------------|-----------------|
-| **Cult** → Sect | 100 Resources | 60% Awe | +10 congregation, +10% legitimacy | Routinization of Charisma |
-| **Sect** → Denomination | 500 Resources | 80% Cohesion | +10 congregation, +10% legitimacy | — |
+| **Movement** → Sect/Cult | 100 Resources | 60% Awe | +10 congregation, +10% legitimacy | Church-Sect Typology |
+| **Sect** → Denomination | 500 Resources | 80% Cohesion | +10 congregation, +10% legitimacy | Routinization of Charisma |
+| **Cult** → Denomination | 500 Resources | 80% Cohesion | +10 congregation, +10% legitimacy | Routinization of Charisma |
 | **Denomination** → Megachurch | 2000 Resources | 90% Legitimacy | +10 congregation, +10% legitimacy | — |
 | **Megachurch** | Final stage | — | — | — |
 
-Each stage unlocks new events, buildings, and features (bureaucracy game at denomination+).
+**The Branching Path:**
+- **The Sect Branch:** Triggered by inclusive choices (e.g., "Invite the journalist"). Follows a path of slow growth and institutionalization.
+- **The Cult Branch:** Triggered by high-tension choices (e.g., "Bar the gates"). This is a high-risk, high-reward ecosystem:
+  - **Cohesion & Awe:** Significant passive bonuses due to isolation.
+  - **Legitimacy:** Rapid decay as social deviance triggers state scrutiny.
+  - **Growth:** Stagnant (80% penalty) due to the high barrier of entry for outsiders.
+  - **Visuals:** The Sanctuary background progressively darkens, reinforcing the "total institution" feel.
+  - **Loss Condition:** The "State Crackdown" (legitimacy ≤ 0) is the primary threat.
+
+**Dynamic Event Triggers:**
+Institutional choices have long-term consequences. Consistently approving expensive "Grandeur" documents in the Bureaucracy phase increases the `bureaucracyGrandeurScore`, which significantly raises the probability of a "Leadership Scandal" event—modeling how institutional excess leads to internal and external legitimacy crises.
 
 ---
 
@@ -117,13 +137,13 @@ A Tinder-style card classification game teaching Durkheim's sacred/profane disti
 - Wrong sort: -10 purity, combo resets
 - Cursed items (15% chance): 2.5-second countdown timer; if not sorted in time, -15 purity
 
-**Item Pool (26+ items across categories):**
+**Item Pool (26 items across categories):**
 
 | Category | Items |
 |----------|-------|
 | **Sacred** | Scripture (📖), Tattered Robe (👘), Altar Candle (🕯️), Stone Idol (🗿), Human Skull (💀), Sacred Oil (🧪), Flower Bouquet (💐) |
 | **Profane** | Old Boot (👢), Dead Crow (🐦‍⬛), Poison Ivy (🌿), River Rock (🪨), LED Screen (📺), Credit Card (💳), Smartphone (📱), Sports Car (🏎️), Designer Watch (⌚), Plastic Bag (🛍️) |
-| **Liminal** | Wine (🍷), Wild Berries (🫐), Coffee Cup (☕), Gold Coin (💰), Electric Guitar (🎸), Megaphone (📢), Glazed Donut (🍩), Microchip (💾) |
+| **Liminal** | Wine (🍷), Wild Berries (🫐), Coffee Cup (☕), Gold Coin (💰), Electric Guitar (🎸), Megaphone (📢), Glazed Donut (🍩), Microchip (💾), Dry Bread (🍞) |
 
 **Dynamic Laws (40% chance per session):**
 
@@ -229,7 +249,7 @@ Document approval mini-game modeling Weber's routinization of charisma.
 
 ### 4.5 Hub / Sanctuary View (Tab: "Sanctuary")
 
-The central view showing the sanctuary's physical and spiritual state.
+The central view showing the sanctuary's physical and spiritual state. The text-based disciple list has been removed to prioritize visual space, with counts moved to the Top Bar.
 
 **Building Visualization — Evolving Icon:**
 
@@ -246,9 +266,9 @@ The central view showing the sanctuary's physical and spiritual state.
 **Orbiting Flock Visualization:**
 - Disciples orbit as colored dots: yellow (Steward), blue (Purist), purple (Mystic)
 - Elder dots are larger (w-2 h-2) than acolyte/novice (w-1.5 h-1.5)
-- Generic congregation members shown as amber dots (capped at 30 visual elements)
-- Each entity orbits at a unique radius (110-150px for disciples) and duration (15-55 seconds)
-- Uses Motion's `animate={{ rotate: 360 }}` with linear easing for smooth continuous rotation
+- Generic congregation members shown as smaller amber dots (capped at 30 visual elements)
+- Each entity orbits at a unique radius (100-150px) and duration (15-55 seconds)
+- Uses Motion's `animate={{ rotate: 360 }}` for disciples and CSS animations for the generic flock
 - Creates a living, breathing visual of the community surrounding its sacred center
 
 **Background gradient shifts:** Amber/brown tones with cathedral, indigo/purple with megachurch tabernacle.
@@ -322,11 +342,12 @@ Routinization of Charisma (Weber)
 
 | Theory | Scholar | Core Idea | Unlock Trigger |
 |--------|---------|-----------|----------------|
+| **Church-Sect Typology** | Weber/Troeltsch | "Religious groups exist on a spectrum of tension with society." | Advance from Movement |
 | **Collective Effervescence** | Durkheim | "Rituals create shared energy that makes the group feel greater than the sum of its parts." | Complete any ritual |
 | **Religious Socialization** | Berger | "Religion provides a 'Sacred Canopy' protecting individuals from chaos by giving it meaning." | Train a disciple |
 | **The Sacred & The Profane** | Durkheim | "Society divides into Sacred (extraordinary, protected) and Profane (ordinary, everyday)." | Complete sorting game |
 | **Purity and Danger** | Douglas | "Dirt is 'matter out of place.' Taboo arises from things that don't fit social categories." | Sort liminal items |
-| **Routinization of Charisma** | Weber | "Charismatic authority must be transformed into legal or traditional authority to survive." | Advance to a new stage |
+| **Routinization of Charisma** | Weber | "Charismatic authority must be transformed into legal or traditional authority to survive." | Advance from Sect/Cult |
 
 **Visual design:** Nodes positioned as a connected graph. Unlocked nodes glow amber with clickable detail panels showing title, theorist, theory quote, and academic description. Locked nodes appear as greyed-out placeholders with connection lines dimmed.
 
@@ -361,9 +382,9 @@ When a game-over condition is triggered, the player can restart with bonuses:
 
 ### Top Bar (Clickable → Stats Glossary)
 - 2x2 grid of compact meter bars (Awe, Cohesion, Legitimacy, Purity)
-- Resources count + Flock count + Church name or stage label
+- Resources count + Flock (congregation) count + Church name or stage label
 - Each meter bar uses spring physics animation (stiffness: 100, damping: 20)
-- Hover effect transitions to slate-800/50
+- Clicking the top bar opens the **Stats Glossary Modal**, providing sociological definitions for all meters.
 
 ### Bottom Navigation (6-7 tabs)
 - Always visible: Sanctuary (🏰), Sorting (⚖️), Ritual (🕯️), Teach (🗣️), Archive (📚)
@@ -447,16 +468,17 @@ These tensions are not scripted narratives but **emergent properties of the mete
 
 ## 11. External Integrations
 
-### Leaderboard (Google Sheets)
+### "Hall of Manifestations" Leaderboard (Google Sheets)
 - Data stored in a Google Sheets spreadsheet, fetched as CSV
-- Score submission via Google Apps Script webhook (no-cors POST)
+- Score submission via Google Apps Script webhook (`no-cors` POST)
+- Accessible from the **Game Over screen** or the **Archive/Hall** view.
 - Tracks: sanctuary name, final stage, member count, total resources
 - Ranked by resources descending, #1 highlighted in amber
 
 ### Oracle Guide (Gemini API)
 - Configured via `GEMINI_API_KEY` environment variable
 - Provides contextual gameplay hints based on current stage and meter deficiencies
-- Triggers randomly (0.01% per tick)
+- Triggers randomly (0.01% per tick) and is visualized in the **HubView**.
 - Suggests specific actions: "perform more rituals," "recruit Steward disciples," "submit legal forms"
 
 ---

@@ -7,8 +7,8 @@ export const NamingModal: React.FC = () => {
   const { state, dispatch } = useGame();
   const [name, setName] = useState('');
 
-  // Trigger when stage is sect or higher and name is empty
-  const showModal = (state.stage !== 'cult') && !state.churchName && !state.isGameOver;
+  // Trigger when stage is not movement and name is empty
+  const showModal = (state.stage !== 'movement') && !state.churchName && !state.isGameOver;
 
   if (!showModal) return null;
 
@@ -37,7 +37,7 @@ export const NamingModal: React.FC = () => {
 
           <h2 className="text-3xl font-serif text-white mb-2">A New Era</h2>
           <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-            Your movement has grown beyond a simple cult. It is time to name your manifestation. How shall the world know you?
+            Your movement has grown beyond its informal roots. It is time to name your manifestation. How shall the world know you?
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">

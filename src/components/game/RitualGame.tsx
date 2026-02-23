@@ -57,6 +57,7 @@ export const RitualGame: React.FC = () => {
   const [lastResult, setLastResult] = useState<boolean>(false);
 
   const isSacred = state.meters.awe > 80;
+  const isExhausted = state.lastRitualId === selectedOption?.id && state.ritualRepetitionCount > 2;
 
   const particles = useMemo(() =>
     Array.from({ length: 20 }, (_, i) => ({
@@ -71,8 +72,7 @@ export const RitualGame: React.FC = () => {
     setLastResult(success);
     if (success && selectedOption) {
       if (isSacred) setIsFlashing(true);
-      dispatch({ type: 'UPDATE_METER', meter: selectedOption.meter, value: selectedOption.bonus });
-      dispatch({ type: 'UPDATE_METER', meter: 'awe', value: 5 });
+      dispatch({ type: 'COMPLETE_RITUAL', ritualId: selectedOption.id, meter: selectedOption.meter, bonus: selectedOption.bonus });
       dispatch({ type: 'UNLOCK_THEORY', id: 'effervescence' });
       
       if (isSacred) {
@@ -190,6 +190,9 @@ export const RitualGame: React.FC = () => {
                      <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Rewards</div>
                      <div className="text-amber-400 font-bold">+{selectedOption?.bonus} {selectedOption?.meter}</div>
                      <div className="text-amber-500 font-bold">+5 Awe</div>
+                     {isExhausted && (
+                       <div className="text-[10px] text-red-400 uppercase tracking-widest mt-2 font-bold animate-pulse">Ritual Exhaustion: Effectiveness Reduced</div>
+                     )}
                   </div>
                 </>
               ) : (

@@ -5,7 +5,7 @@ import { Users, Crown, Sparkles, Home, Landmark, Building2, Church } from 'lucid
 import { OracleGuide } from '../ui/OracleGuide';
 
 const UPGRADES = [
-  { id: 'basement', name: 'Basement', icon: <Home size={14} />, cost: 50, aweBonus: 5, minStage: 'cult' },
+  { id: 'basement', name: 'Basement', icon: <Home size={14} />, cost: 50, aweBonus: 5, minStage: 'movement' },
   { id: 'chapel', name: 'Chapel', icon: <Landmark size={14} />, cost: 300, aweBonus: 10, minStage: 'sect' },
   { id: 'cathedral', name: 'Cathedral', icon: <Church size={14} />, cost: 1500, aweBonus: 20, minStage: 'denomination' },
   { id: 'megacomplex', name: 'Tabernacle', icon: <Building2 size={14} />, cost: 5000, aweBonus: 40, minStage: 'megachurch' },
@@ -21,6 +21,7 @@ export const HubView: React.FC = () => {
   const { state, dispatch } = useGame();
 
   const getBuildingIcon = () => {
+    if (state.stage === 'cult') return '🏰';
     if (state.buildings.includes('megacomplex')) return '🏟️';
     if (state.buildings.includes('cathedral')) return '⛪';
     if (state.buildings.includes('chapel')) return '🛖';
@@ -29,6 +30,7 @@ export const HubView: React.FC = () => {
   };
 
   const getBackgroundGradient = () => {
+    if (state.stage === 'cult') return 'from-slate-950 via-slate-900 to-black';
     if (state.buildings.includes('megacomplex')) return 'from-indigo-900/40 to-slate-950';
     if (state.buildings.includes('cathedral')) return 'from-amber-900/30 to-slate-950';
     return 'from-slate-900 to-slate-950';
@@ -184,10 +186,17 @@ const UpgradeButton: React.FC = () => {
   let canUpgrade = false;
 
   switch (state.stage) {
-    case 'cult':
+    case 'movement':
       cost = 100;
       requirement = { meter: 'awe', value: 60 };
-      nextStage = 'sect';
+      const highTensionDecisions = ['barred_gates', 'strict_purity', 'doubled_down'];
+      const isHighTension = highTensionDecisions.some(id => state.decisionHistory.includes(id));
+      nextStage = isHighTension ? 'cult' : 'sect';
+      break;
+    case 'cult':
+      cost = 500;
+      requirement = { meter: 'cohesion', value: 80 };
+      nextStage = 'denomination';
       break;
     case 'sect':
       cost = 500;
@@ -210,7 +219,7 @@ const UpgradeButton: React.FC = () => {
       dispatch({ type: 'ADD_RESOURCE', amount: -cost });
       dispatch({ type: 'ADVANCE_STAGE', stage: nextStage });
       dispatch({ type: 'UPDATE_METER', meter: 'legitimacy', value: 10 });
-      dispatch({ type: 'UNLOCK_THEORY', id: 'routinization' });
+      dispatch({ type: 'UNLOCK_THEORY', id: state.stage === 'movement' ? 'church_sect' : 'routinization' });
       dispatch({ type: 'TRIGGER_ORACLE' });
     }
   };

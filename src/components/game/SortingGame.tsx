@@ -61,7 +61,7 @@ const ITEMS_PER_SESSION = 10;
 export const SortingGame: React.FC = () => {
   const { state, dispatch } = useGame();
   const [cards, setCards] = useState<Item[]>([]);
-  const [currentLaw, setCurrentLaw] = useState<Law | null>(null);
+  const [activeLaws, setActiveLaws] = useState<Law[]>([]);
   const [result, setResult] = useState<{ type: 'correct' | 'wrong', label: string } | null>(null);
   const [combo, setCombo] = useState(0);
   const [sessionPhase, setSessionPhase] = useState<'start' | 'playing' | 'end'>('start');
@@ -69,8 +69,8 @@ export const SortingGame: React.FC = () => {
 
   const startSession = () => {
     const filtered = ALL_ITEMS.filter(item => {
-      if (state.stage === 'cult') return item.category !== 'modern' && item.type !== 'liminal';
-      if (state.stage === 'sect') return item.category !== 'modern';
+      if (state.stage === 'movement') return item.category !== 'modern' && item.type !== 'liminal';
+      if (state.stage === 'sect' || state.stage === 'cult') return item.category !== 'modern';
       return true;
     });
 
@@ -88,22 +88,29 @@ export const SortingGame: React.FC = () => {
     setSessionScore(0);
     setSessionPhase('playing');
     
-    if (Math.random() < 0.4) {
-      setCurrentLaw(LAWS[Math.floor(Math.random() * LAWS.length)]);
-    } else {
-      setCurrentLaw(null);
+    // Law Stacking Logic
+    const newLaws: Law[] = [];
+    if (Math.random() < 0.5) { // 50% chance for at least one law
+      newLaws.push(LAWS[Math.floor(Math.random() * LAWS.length)]);
+      if (Math.random() < 0.3) { // 30% chance for a second law if first exists
+        const secondLaw = LAWS[Math.floor(Math.random() * LAWS.length)];
+        if (secondLaw.id !== newLaws[0].id) newLaws.push(secondLaw);
+      }
     }
+    setActiveLaws(newLaws);
   };
 
   const activeCard = cards[0];
 
   const getItemType = (item: Item): 'sacred' | 'profane' => {
-    if (currentLaw) {
-      const lawResult = currentLaw.check(item);
+    // Check all active laws
+    for (const law of activeLaws) {
+      const lawResult = law.check(item);
       if (lawResult) return lawResult;
     }
+    
     if (item.type !== 'liminal') return item.type;
-    return (state.stage === 'cult' || state.stage === 'sect') ? 'profane' : 'sacred';
+    return (state.stage === 'movement' || state.stage === 'cult' || state.stage === 'sect') ? 'profane' : 'sacred';
   };
 
   const handleSwipe = (direction: 'left' | 'right') => {
@@ -204,15 +211,26 @@ export const SortingGame: React.FC = () => {
   return (
     <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
       <AnimatePresence>
-        {currentLaw && !state.activeEvent && (
-          <motion.div initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -100, opacity: 0 }} className="absolute top-4 left-4 right-4 z-50 bg-amber-600 text-black p-3 rounded-xl shadow-2xl flex items-center gap-3 border-2 border-amber-400">
-            <AlertCircle size={24} />
-            <div>
-              <div className="font-black text-[10px] uppercase tracking-tighter">Current Law</div>
-              <div className="font-bold text-sm leading-none">{currentLaw.title}</div>
-              <div className="text-[10px] opacity-80 mt-1">{currentLaw.description}</div>
-            </div>
-          </motion.div>
+        {activeLaws.length > 0 && !state.activeEvent && (
+          <div className="absolute top-4 left-4 right-4 z-50 flex flex-col gap-2">
+            {activeLaws.map((law, idx) => (
+              <motion.div 
+                key={law.id}
+                initial={{ y: -50, opacity: 0 }} 
+                animate={{ y: 0, opacity: 1 }} 
+                exit={{ y: -50, opacity: 0 }} 
+                transition={{ delay: idx * 0.1 }}
+                className="bg-amber-600 text-black p-3 rounded-xl shadow-2xl flex items-center gap-3 border-2 border-amber-400"
+              >
+                <AlertCircle size={24} className="shrink-0" />
+                <div>
+                  <div className="font-black text-[10px] uppercase tracking-tighter">Active Law</div>
+                  <div className="font-bold text-sm leading-none">{law.title}</div>
+                  <div className="text-[10px] opacity-80 mt-1">{law.description}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         )}
       </AnimatePresence>
 
