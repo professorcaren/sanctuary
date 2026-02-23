@@ -1,0 +1,269 @@
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { GameState, MeterType, GameEvent, LearningPrompt, ArchiveEntry } from '../types/game';
+
+const THEORY_ARCHIVE: Record<string, ArchiveEntry> = {
+  'effervescence': {
+    id: 'effervescence',
+    title: 'Collective Effervescence',
+    concept: 'Émile Durkheim',
+    theory: 'Rituals create a shared energy that makes the group feel like something greater than the sum of its parts.',
+    description: 'When humans gather and perform the same actions, they experience a loss of self and a feeling of "sacred" unity.'
+  },
+  'socialization': {
+    id: 'socialization',
+    title: 'Religious Socialization',
+    concept: 'Peter Berger',
+    theory: 'Religion provides a "Sacred Canopy" that protects individuals from the chaos of the world by giving it meaning.',
+    description: 'Doctrine is the process of teaching members how to perceive reality according to the group\'s logic.'
+  },
+  'sacred_profane': {
+    id: 'sacred_profane',
+    title: 'The Sacred & The Profane',
+    concept: 'Émile Durkheim',
+    theory: 'Society is divided into two realms: the Sacred (extraordinary, protected) and the Profane (ordinary, everyday).',
+    description: 'A thing is not sacred because of its inherent qualities, but because the group has collectively set it apart.'
+  },
+  'purity_danger': {
+    id: 'purity_danger',
+    title: 'Purity and Danger',
+    concept: 'Mary Douglas',
+    theory: 'Dirt is "matter out of place." Taboo arises from things that don\'t fit into our social categories.',
+    description: 'Ambiguous items (like wine or gold) create tension. How a group classifies them defines its social boundaries.'
+  },
+  'routinization': {
+    id: 'routinization',
+    title: 'Routinization of Charisma',
+    concept: 'Max Weber',
+    theory: 'Charismatic authority must be transformed into legal or traditional authority to survive the leader\'s death.',
+    description: 'The transition from a "Cult" to a "Denomination" requires rules, bureaucracy, and predictable rituals.'
+  }
+};
+
+const INITIAL_STATE: GameState = {
+  meters: {
+    awe: 50,
+    cohesion: 50,
+    legitimacy: 30,
+    resources: 20,
+    purity: 80,
+  },
+  stage: 'cult',
+  resources: 100,
+  unlockedFeatures: ['sorting', 'ritual'],
+  congregationSize: 5,
+  lastRitualTime: 0,
+  activeEvent: null,
+  activePrompt: null,
+  seenPrompts: [],
+  seenEvents: [],
+  archive: [],
+};
+
+type Action =
+  | { type: 'UPDATE_METER'; meter: MeterType; value: number }
+  | { type: 'ADD_RESOURCE'; amount: number }
+  | { type: 'ADD_MEMBERS'; amount: number }
+  | { type: 'ADVANCE_STAGE'; stage: GameState['stage'] }
+  | { type: 'TICK'; delta: number }
+  | { type: 'TRIGGER_EVENT'; event: GameEvent }
+  | { type: 'RESOLVE_EVENT' }
+  | { type: 'SHOW_PROMPT'; prompt: LearningPrompt }
+  | { type: 'DISMISS_PROMPT' }
+  | { type: 'UNLOCK_THEORY'; id: string };
+
+const EVENTS: Record<string, GameEvent[]> = {
+  'cult': [
+    {
+      id: 'scandal',
+      title: 'Leadership Scandal',
+      description: 'Rumors circulate about the High Priest\'s lavish spending.',
+      choices: [
+        { text: 'Suppress the rumors', outcome: 'The flock is quiet, but suspicious.', effects: { legitimacy: -10, cohesion: 5 } },
+        { text: 'Public Confession', outcome: 'Honesty hurts, but heals.', effects: { legitimacy: 5, awe: -10 } },
+      ]
+    },
+    {
+      id: 'outsider',
+      title: 'The Outsider\'s Curiosity',
+      description: 'A local journalist is asking questions about your "community."',
+      choices: [
+        { text: 'Invite them in', outcome: 'Transparency builds trust, but ruins the mystery.', effects: { legitimacy: 15, awe: -10 } },
+        { text: 'Bar the gates', outcome: 'Secrecy fuels cohesion, but looks suspicious.', effects: { cohesion: 10, legitimacy: -15 } },
+      ]
+    },
+    {
+      id: 'miracle_claim',
+      title: 'The False Miracle',
+      description: 'A follower claims to have been healed, but it looks like a hoax.',
+      choices: [
+        { text: 'Validate the Miracle', outcome: 'Awe skyrockets, but the wise are wary.', effects: { awe: 20, legitimacy: -10 } },
+        { text: 'Correct the Follower', outcome: 'Integrity is maintained at the cost of magic.', effects: { purity: 10, awe: -15 } },
+      ]
+    }
+  ],
+  'sect': [
+    {
+      id: 'prophecy',
+      title: 'Failed Prophecy',
+      description: 'The promised sign did not appear in the sky. Cognitive dissonance sets in.',
+      choices: [
+        { text: 'Reinterpret the signs', outcome: 'It was a metaphor!', effects: { awe: -5, legitimacy: -5 } },
+        { text: 'Double Down', outcome: 'It will come soon! Faith is tested!', effects: { cohesion: 15, legitimacy: -20 } },
+      ]
+    },
+    {
+      id: 'routinization_crisis',
+      title: 'The Need for Order',
+      description: 'The movement is growing too fast for a single leader to manage.',
+      choices: [
+        { text: 'Appoint Elders (Bureaucracy)', outcome: 'Stability increases, but the "fire" dims.', effects: { legitimacy: 20, awe: -10, cohesion: 5 } },
+        { text: 'Keep it Personal (Charisma)', outcome: 'Awe remains high, but chaos reigns.', effects: { awe: 15, legitimacy: -10, resources: -20 } },
+      ]
+    },
+    {
+      id: 'factionalism',
+      title: 'Internal Factionalism',
+      description: 'Two members are arguing over who is the most "pure."',
+      choices: [
+        { text: 'Side with the Strict', outcome: 'Purity increases, but the group shrinks.', effects: { purity: 15, congregationSize: -5, cohesion: -5 } },
+        { text: 'Preach Moderate Unity', outcome: 'Peace returns, but at the cost of rigor.', effects: { cohesion: 10, purity: -10 } },
+      ]
+    }
+  ],
+  'denomination': [
+    {
+      id: 'secular_tension',
+      title: 'The World Calls',
+      description: 'Members are spending more time at their secular jobs than in prayer.',
+      choices: [
+        { text: 'Adapt Message', outcome: 'We become relevant, but less "distinct".', effects: { legitimacy: 10, purity: -15, resources: 50 } },
+        { text: 'Enforce Strictness', outcome: 'We remain pure, but lose members.', effects: { purity: 15, congregationSize: -10, cohesion: 10 } },
+      ]
+    },
+    {
+      id: 'media_spotlight',
+      title: 'National Media Spotlight',
+      description: 'A major network wants to film your main service.',
+      choices: [
+        { text: 'Go Prime Time', outcome: 'Huge growth, but the message is watered down.', effects: { resources: 100, congregationSize: 20, purity: -20 } },
+        { text: 'Protect the Sacred', outcome: 'Awe is preserved for the faithful.', effects: { awe: 15, resources: -20 } },
+      ]
+    }
+  ]
+};
+
+const gameReducer = (state: GameState, action: Action): GameState => {
+  switch (action.type) {
+    case 'UPDATE_METER':
+      return {
+        ...state,
+        meters: {
+          ...state.meters,
+          [action.meter]: Math.max(0, Math.min(100, state.meters[action.meter] + action.value)),
+        },
+      };
+    case 'ADD_RESOURCE':
+      return {
+        ...state,
+        resources: state.resources + action.amount,
+      };
+    case 'ADD_MEMBERS':
+      return {
+        ...state,
+        congregationSize: Math.max(0, state.congregationSize + action.amount),
+      };
+    case 'ADVANCE_STAGE':
+      return {
+        ...state,
+        stage: action.stage,
+        congregationSize: state.congregationSize + 10,
+        seenEvents: [], // Clear history on stage advance
+      };
+    case 'TRIGGER_EVENT':
+      return { 
+        ...state, 
+        activeEvent: action.event,
+        seenEvents: [...state.seenEvents, action.event.id] 
+      };
+    case 'RESOLVE_EVENT':
+      return { ...state, activeEvent: null };
+    case 'SHOW_PROMPT':
+      if (state.seenPrompts.includes(action.prompt.id)) return state;
+      return { ...state, activePrompt: action.prompt, seenPrompts: [...state.seenPrompts, action.prompt.id] };
+    case 'DISMISS_PROMPT':
+      return { ...state, activePrompt: null };
+    case 'UNLOCK_THEORY':
+      if (state.archive.find(e => e.id === action.id)) return state;
+      const entry = THEORY_ARCHIVE[action.id];
+      if (!entry) return state;
+      return {
+        ...state,
+        archive: [...state.archive, entry]
+      };
+    case 'TICK':
+      const passiveIncome = Math.floor(state.congregationSize / 10);
+      const growthChance = state.meters.cohesion / 1000;
+      const newMember = Math.random() < growthChance ? 1 : 0;
+      
+      let nextEvent = state.activeEvent;
+      let newSeenEvents = state.seenEvents;
+
+      if (!state.activeEvent && Math.random() < 0.005) { 
+        const possibleEvents = (EVENTS[state.stage] || EVENTS['cult']).filter(
+          e => !state.seenEvents.includes(e.id)
+        );
+        
+        if (possibleEvents.length > 0) {
+          nextEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
+          newSeenEvents = [...state.seenEvents, nextEvent.id];
+        } else if (state.seenEvents.length > 0) {
+          // If we've seen everything, reset the history for this stage
+          newSeenEvents = [];
+        }
+      }
+
+      return {
+        ...state,
+        resources: state.resources + passiveIncome,
+        congregationSize: state.congregationSize + newMember,
+        activeEvent: nextEvent,
+        seenEvents: newSeenEvents,
+        meters: {
+            ...state.meters,
+            awe: Math.max(0, state.meters.awe - 0.1)
+        }
+      };
+    default:
+      return state;
+  }
+};
+
+const GameContext = createContext<{
+  state: GameState;
+  dispatch: React.Dispatch<Action>;
+} | null>(null);
+
+export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(gameReducer, INITIAL_STATE);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch({ type: 'TICK', delta: 1000 });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <GameContext.Provider value={{ state, dispatch }}>
+      {children}
+    </GameContext.Provider>
+  );
+};
+
+export const useGame = () => {
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
+};
