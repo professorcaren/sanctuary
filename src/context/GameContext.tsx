@@ -59,6 +59,7 @@ const INITIAL_STATE: GameState = {
   archive: [],
   isGameOver: false,
   gameOverReason: null,
+  disciples: [], // Initialize empty
 };
 
 type Action =
@@ -73,9 +74,12 @@ type Action =
   | { type: 'DISMISS_PROMPT' }
   | { type: 'UNLOCK_THEORY'; id: string }
   | { type: 'RESET_GAME' }
-  | { type: 'TRIGGER_SCHISM' };
+  | { type: 'TRIGGER_SCHISM' }
+  | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
+  | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number };
 
 const EVENTS: Record<string, GameEvent[]> = {
+// ... existing events
   'cult': [
     {
       id: 'scandal',
@@ -221,10 +225,62 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         },
         activeEvent: null,
       };
+    case 'RECRUIT_DISCIPLE':
+      // @ts-ignore
+      if (state.congregationSize < 5) return state;
+      return {
+        ...state,
+        congregationSize: state.congregationSize - 1,
+        disciples: [
+          ...state.disciples,
+          {
+            id: Date.now().toString(),
+            // @ts-ignore
+            name: action.name,
+            role: 'novice',
+            loyalty: 50,
+            // @ts-ignore
+            specialty: action.specialty,
+            history: [],
+          },
+        ],
+      };
+    case 'TRAIN_DISCIPLE':
+      return {
+        ...state,
+        disciples: state.disciples.map(d => {
+          // @ts-ignore
+          if (d.id !== action.id) return d;
+          
+          // @ts-ignore
+          let newLoyalty = d.loyalty + (action.outcome === 'success' ? action.points : -5);
+          let newRole = d.role;
+          
+          // Promotion Logic
+          if (d.role === 'novice' && newLoyalty >= 80) newRole = 'acolyte';
+          if (d.role === 'acolyte' && newLoyalty >= 100) newRole = 'elder';
+          
+          return { ...d, loyalty: Math.min(100, Math.max(0, newLoyalty)), role: newRole };
+        }),
+      };
     case 'TICK':
       if (state.isGameOver) return state;
 
       const passiveIncome = Math.floor(state.congregationSize / 10);
+      
+      // Disciple Bonuses
+      let discipleResources = 0;
+      let discipleAwe = 0;
+      let disciplePurity = 0;
+      
+      state.disciples.forEach(d => {
+        if (d.role === 'acolyte' || d.role === 'elder') {
+           if (d.specialty === 'resources') discipleResources += (d.role === 'elder' ? 5 : 2);
+           if (d.specialty === 'awe') discipleAwe += (d.role === 'elder' ? 0.5 : 0.1);
+           if (d.specialty === 'purity') disciplePurity += (d.role === 'elder' ? 0.5 : 0.1);
+        }
+      });
+
       const growthChance = state.meters.cohesion / 1000;
       const newMember = Math.random() < growthChance ? 1 : 0;
       
@@ -258,13 +314,14 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 
       return {
         ...state,
-        resources: state.resources + passiveIncome,
+        resources: state.resources + passiveIncome + discipleResources,
         congregationSize: state.congregationSize + newMember,
         activeEvent: nextEvent,
         seenEvents: newSeenEvents,
         meters: {
             ...state.meters,
-            awe: Math.max(0, state.meters.awe - 0.1)
+            awe: Math.max(0, state.meters.awe - 0.1 + discipleAwe),
+            purity: Math.min(100, state.meters.purity + disciplePurity)
         }
       };
     default:
