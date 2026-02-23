@@ -69,7 +69,8 @@ export const SortingGame: React.FC = () => {
 
   const startSession = () => {
     const filtered = ALL_ITEMS.filter(item => {
-      if (state.stage === 'cult' || state.stage === 'sect') return item.category !== 'modern';
+      if (state.stage === 'cult') return item.category !== 'modern' && item.type !== 'liminal';
+      if (state.stage === 'sect') return item.category !== 'modern';
       return true;
     });
 
@@ -157,7 +158,12 @@ export const SortingGame: React.FC = () => {
         <p className="text-slate-400 text-sm mb-8 leading-relaxed">
           The law is written in the stars, but it is practiced on the earth. Sort the items to maintain the group's purity.
         </p>
-        <button 
+        {state.stage === 'sect' && (
+          <p className="text-amber-500/70 text-xs mb-4 italic">
+            "New objects have appeared... not all things are clearly sacred or profane."
+          </p>
+        )}
+        <button
           onClick={startSession}
           className="w-full py-4 bg-amber-600 text-white font-bold rounded-2xl shadow-lg hover:bg-amber-500 transition-colors"
         >
@@ -218,7 +224,7 @@ export const SortingGame: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative w-64 h-96 flex items-center justify-center">
+      <div className="relative w-full max-w-[256px] h-96 flex items-center justify-center">
         <div className="absolute left-0 -translate-x-10 text-red-900/40 flex flex-col items-center"><Trash2 size={48} /></div>
         <div className="absolute right-0 translate-x-10 text-amber-900/40 flex flex-col items-center"><Sparkles size={48} /></div>
 
@@ -233,11 +239,20 @@ export const SortingGame: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {result && (
-          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1.2 }} className={`absolute z-50 text-5xl font-black italic text-center ${result.type === 'correct' ? 'text-amber-400' : 'text-red-600'}`}>
-            {result.label}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              key={result.label}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1.2 }}
+              exit={{ opacity: 0, scale: 0.3, y: -20 }}
+              transition={{ exit: { duration: 0.3 } }}
+              className={`absolute z-50 text-5xl font-black italic text-center ${result.type === 'correct' ? 'text-amber-400' : 'text-red-600'}`}
+            >
+              {result.label}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {activeCard && !result && (
@@ -286,7 +301,7 @@ const Card: React.FC<{ item: Item; onSwipe: (dir: 'left' | 'right') => void, onE
       drag="x" dragConstraints={{ left: -200, right: 200 }}
       onDragEnd={(_, info) => { if (info.offset.x > 100) onSwipe('right'); else if (info.offset.x < -100) onSwipe('left'); }}
       animate={item.isCursed ? { x: [0, -2, 2, -2, 0], transition: { repeat: Infinity, duration: 0.1 } } : {}}
-      className={`absolute w-64 h-80 rounded-2xl shadow-2xl border-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden ${item.isCursed ? 'border-red-600' : 'border-slate-800'}`}
+      className={`absolute w-full max-w-[256px] h-80 rounded-2xl shadow-2xl border-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden ${item.isCursed ? 'border-red-600' : 'border-slate-800'}`}
     >
       {item.isCursed && (
         <div className="absolute top-4 flex items-center gap-1 text-red-500 animate-pulse">

@@ -72,26 +72,47 @@ export const HubView: React.FC = () => {
 
   return (
     <div className={`h-full flex flex-col items-center p-4 bg-gradient-to-b ${getBackgroundGradient()} overflow-y-auto relative`}>
+      <style>{`
+        @keyframes orbit {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <OracleGuide />
-      
+
       {/* Main Building Visualization */}
       <div className="relative w-40 h-40 flex items-center justify-center shrink-0 mt-8">
-        
+
         {/* Orbiting Flock */}
         {flockDots.map((dot) => (
-          <motion.div 
-            key={dot.id}
-            className="absolute rounded-full pointer-events-none"
-            animate={{ rotate: 360 }}
-            transition={{ duration: dot.duration, repeat: Infinity, ease: "linear" }}
-            style={{ 
-              width: dot.orbitRadius * 2, 
-              height: dot.orbitRadius * 2,
-              zIndex: dot.isDisciple ? 20 : 1
-            }}
-          >
-            <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ${dot.color} ${dot.size} ${dot.isDisciple ? 'shadow-[0_0_8px_currentColor]' : ''}`} />
-          </motion.div>
+          dot.isDisciple ? (
+            <motion.div
+              key={dot.id}
+              className="absolute rounded-full pointer-events-none"
+              animate={{ rotate: 360 }}
+              transition={{ duration: dot.duration, repeat: Infinity, ease: "linear" }}
+              style={{
+                width: dot.orbitRadius * 2,
+                height: dot.orbitRadius * 2,
+                zIndex: 20
+              }}
+            >
+              <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ${dot.color} ${dot.size} shadow-[0_0_8px_currentColor]`} />
+            </motion.div>
+          ) : (
+            <div
+              key={dot.id}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: dot.orbitRadius * 2,
+                height: dot.orbitRadius * 2,
+                zIndex: 1,
+                animation: `orbit ${dot.duration}s linear infinite`,
+              }}
+            >
+              <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ${dot.color} ${dot.size}`} />
+            </div>
+          )
         ))}
 
         {/* The Building */}

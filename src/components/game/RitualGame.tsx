@@ -94,7 +94,7 @@ export const RitualGame: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            className="w-full h-full flex flex-col items-center justify-center p-6 z-10"
+            className="w-full h-full flex flex-col items-center justify-center p-4 z-10"
           >
             <div className="text-center mb-10">
               <h2 className="text-3xl font-serif text-amber-100">Sacred Ritual</h2>
@@ -131,7 +131,7 @@ export const RitualGame: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`w-full h-full flex flex-col items-center justify-center p-6 relative transition-colors duration-1000 ${isSacred ? 'bg-amber-950/10' : ''}`}
+            className={`w-full h-full flex flex-col items-center justify-center p-4 relative transition-colors duration-1000 ${isSacred ? 'bg-amber-950/10' : ''}`}
           >
             <AnimatePresence>
               {isFlashing && (
@@ -164,7 +164,7 @@ export const RitualGame: React.FC = () => {
             
             <button 
               onClick={() => setPhase('prep')}
-              className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10"
+              className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10 py-3 px-4"
             >
               Cancel Ritual
             </button>
@@ -387,7 +387,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
 
   const animate = () => {
     if (isHoldingRef.current) {
-      if (holdTimeRef.current % 60 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
+      if (holdTimeRef.current % 120 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
       setHoldTime(prev => {
         const next = prev + 1;
         holdTimeRef.current = next;
@@ -428,7 +428,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
         onPointerUp={() => setIsHolding(false)}
         onPointerLeave={() => setIsHolding(false)}
         animate={{ scale: isHolding ? 0.9 : 1, backgroundColor: isHolding ? '#f59e0b' : '#0f172a' }}
-        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none relative overflow-hidden"
+        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none relative overflow-hidden touch-none"
       >
         <Fingerprint size={48} />
         {isHolding && (

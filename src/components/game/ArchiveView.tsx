@@ -33,7 +33,7 @@ export const ArchiveView: React.FC = () => {
   const selectedTheory = state.archive.find(t => t.id === selectedId);
 
   return (
-    <div className="h-full flex flex-col p-4 bg-slate-950 overflow-hidden relative">
+    <div className="h-full flex flex-col p-4 bg-slate-950 overflow-y-auto relative">
       <div className="mb-4 text-center shrink-0">
         <h2 className="text-2xl font-serif text-amber-100 flex items-center justify-center gap-2">
           <Book className="text-amber-500" /> Web of Knowledge
@@ -42,7 +42,7 @@ export const ArchiveView: React.FC = () => {
       </div>
 
       {/* The Web Visualizer */}
-      <div className="flex-1 relative bg-slate-900/30 rounded-3xl border border-slate-800/50 shadow-inner overflow-hidden">
+      <div className="flex-1 relative bg-slate-900/30 rounded-3xl border border-slate-800/50 shadow-inner overflow-visible pb-8">
         {/* Connection Lines (SVG) */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
           {Object.values(NODES).map(node => 
@@ -102,7 +102,7 @@ export const ArchiveView: React.FC = () => {
                   <h3 className="text-amber-400 font-bold text-lg leading-none">{selectedTheory.title}</h3>
                   <p className="text-[10px] text-slate-500 mt-1 font-mono uppercase">{selectedTheory.concept}</p>
                 </div>
-                <button onClick={() => setSelectedId(null)} className="text-slate-500 hover:text-white">✕</button>
+                <button onClick={() => setSelectedId(null)} className="text-slate-500 hover:text-white p-2">✕</button>
               </div>
               <p className="text-xs text-slate-200 italic mb-3">"{selectedTheory.theory}"</p>
               <p className="text-[10px] text-slate-500 leading-relaxed border-t border-slate-800 pt-3">

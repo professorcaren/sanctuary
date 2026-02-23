@@ -117,7 +117,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
 const NavButton = ({ active, onClick, label, icon }: any) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center p-2 rounded-xl transition-all ${
+    className={`flex flex-col items-center p-2 rounded-xl transition-all min-w-[44px] min-h-[44px] ${
       active ? 'bg-slate-800 text-amber-400 scale-105' : 'text-slate-500 hover:text-slate-300'
     }`}
   >

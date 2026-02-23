@@ -60,7 +60,7 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
           exit={{ scale: 0.9, y: 20 }}
           className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
         >
-          <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+          <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white p-2">
             <X size={20} />
           </button>
 
