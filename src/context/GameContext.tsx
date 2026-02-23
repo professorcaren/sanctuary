@@ -353,15 +353,22 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       const count = isRepeat ? state.ritualRepetitionCount + 1 : 1;
       const multiplier = count > 2 ? 1 / (1 + (count - 2) * 0.5) : 1;
 
+      const meterBonus = action.bonus * multiplier;
+      const sharedAweBonus = 5 * multiplier;
+
+      const newMeters = { ...state.meters };
+      
+      // Apply the specific ritual bonus
+      newMeters[action.meter] = Math.min(100, Math.max(0, newMeters[action.meter] + meterBonus));
+      
+      // Apply the shared awe bonus (stacking if the ritual was already awe-based)
+      newMeters.awe = Math.min(100, Math.max(0, newMeters.awe + sharedAweBonus));
+
       return {
         ...state,
         lastRitualId: action.ritualId,
         ritualRepetitionCount: count,
-        meters: {
-          ...state.meters,
-          [action.meter]: Math.min(100, Math.max(0, state.meters[action.meter] + (action.bonus * multiplier))),
-          awe: Math.min(100, Math.max(0, state.meters.awe + (5 * multiplier)))
-        }
+        meters: newMeters
       };
     case 'RECRUIT_DISCIPLE':
       // @ts-ignore
