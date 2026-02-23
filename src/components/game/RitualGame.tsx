@@ -73,110 +73,132 @@ export const RitualGame: React.FC = () => {
     setPhase('result');
   };
 
-  if (phase === 'prep') {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-950">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-serif text-amber-100">Prepare the Ritual</h2>
-          <p className="text-sm text-slate-500 mt-2">How shall we reach the divine today?</p>
-        </div>
-
-        <div className="w-full space-y-4">
-          {RITUAL_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => { setSelectedOption(option); setPhase('action'); }}
-              className="w-full p-5 bg-slate-900 border border-slate-800 rounded-2xl text-left hover:border-amber-500/50 transition-all group"
-            >
-              <div className="flex items-center gap-4 mb-2">
-                <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 group-hover:scale-110 transition-transform">
-                  {option.icon}
-                </div>
-                <div>
-                  <div className="font-bold text-slate-100">{option.name}</div>
-                  <div className="text-[10px] text-amber-500 uppercase tracking-widest">{option.effect}</div>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 italic">"{option.theory}"</p>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === 'result') {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-8 bg-slate-950 text-center">
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }} 
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl w-full max-w-xs"
-        >
-          {lastResult ? (
-            <>
-              <CheckCircle2 size={64} className="text-green-500 mx-auto mb-6" />
-              <h2 className="text-2xl font-serif text-white mb-2">Ritual Complete</h2>
-              <p className="text-slate-400 text-sm mb-6">The group feels the collective surge.</p>
-              <div className="bg-slate-800 rounded-xl p-4 mb-8">
-                 <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Rewards</div>
-                 <div className="text-amber-400 font-bold">+{selectedOption?.bonus} {selectedOption?.meter}</div>
-                 <div className="text-amber-500 font-bold">+5 Awe</div>
-              </div>
-            </>
-          ) : (
-            <>
-              <XCircle size={64} className="text-red-500 mx-auto mb-6" />
-              <h2 className="text-2xl font-serif text-white mb-2">Ritual Failed</h2>
-              <p className="text-slate-400 text-sm mb-8">The focus was broken. The energy dissipates into the void.</p>
-            </>
-          )}
-          
-          <button 
-            onClick={() => { setPhase('prep'); setSelectedOption(null); }}
-            className="w-full py-4 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors"
-          >
-            Continue
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
-    <div className={`h-full p-6 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-1000 ${isSacred ? 'bg-amber-950/20' : 'bg-slate-950'}`}>
+    <div className="h-full flex flex-col items-center justify-center bg-slate-950 relative overflow-hidden">
+      {/* Sacred Sorting Style Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-slate-950 to-black" />
       
-      <AnimatePresence>
-        {isFlashing && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-white pointer-events-none" />
+      <AnimatePresence mode="wait">
+        {phase === 'prep' && (
+          <motion.div 
+            key="prep"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="w-full h-full flex flex-col items-center justify-center p-6 z-10"
+          >
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-serif text-amber-100">Sacred Ritual</h2>
+              <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Invoke the divine</p>
+            </div>
+
+            <div className="w-full space-y-4 max-w-sm">
+              {RITUAL_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => { setSelectedOption(option); setPhase('action'); }}
+                  className="w-full p-5 bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl text-left hover:border-amber-500/50 hover:bg-slate-800 transition-all group relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  <div className="flex items-center gap-4 mb-2 relative z-10">
+                    <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 group-hover:scale-110 transition-transform">
+                      {option.icon}
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-100">{option.name}</div>
+                      <div className="text-[10px] text-amber-500 uppercase tracking-widest">{option.effect}</div>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 italic relative z-10 leading-relaxed">"{option.theory}"</p>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {phase === 'action' && (
+          <motion.div 
+            key="action"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className={`w-full h-full flex flex-col items-center justify-center p-6 relative transition-colors duration-1000 ${isSacred ? 'bg-amber-950/10' : ''}`}
+          >
+            <AnimatePresence>
+              {isFlashing && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-white pointer-events-none" />
+              )}
+            </AnimatePresence>
+
+            {isSacred && (
+              <div className="absolute inset-0 pointer-events-none">
+                 {Array.from({ length: 20 }).map((_, i) => (
+                   <motion.div key={i} className="absolute w-1 h-1 bg-amber-400 rounded-full" animate={{ y: [-20, -500], x: Math.random() * 400, opacity: [0, 1, 0] }} transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }} style={{ left: `${Math.random() * 100}%`, bottom: '0%' }} />
+                 ))}
+              </div>
+            )}
+
+            <div className="absolute top-12 text-center z-10">
+              <h2 className={`text-2xl font-serif transition-colors ${isSacred ? 'text-amber-300' : 'text-amber-100'}`}>
+                {selectedOption?.name}
+              </h2>
+              {isSacred && <p className="text-[8px] uppercase tracking-[0.4em] text-amber-500 mt-1 animate-pulse">Collective Effervescence</p>}
+            </div>
+
+            {selectedOption?.mode === 'rhythm' && <RhythmGame onComplete={handleComplete} isSacred={isSacred} />}
+            {selectedOption?.mode === 'sequence' && <SequenceGame onComplete={handleComplete} isSacred={isSacred} />}
+            {selectedOption?.mode === 'focus' && <FocusGame onComplete={handleComplete} isSacred={isSacred} />}
+            
+            <button 
+              onClick={() => setPhase('prep')}
+              className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10"
+            >
+              Cancel Ritual
+            </button>
+          </motion.div>
+        )}
+
+        {phase === 'result' && (
+          <motion.div 
+            key="result"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full h-full flex flex-col items-center justify-center p-8 z-10"
+          >
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl w-full max-w-xs text-center">
+              {lastResult ? (
+                <>
+                  <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+                    <CheckCircle2 size={48} className="text-green-500" />
+                  </div>
+                  <h2 className="text-2xl font-serif text-white mb-2">Ritual Complete</h2>
+                  <p className="text-slate-400 text-sm mb-6">The group feels the collective surge.</p>
+                  <div className="bg-slate-800/50 rounded-xl p-4 mb-8 border border-slate-700">
+                     <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Rewards</div>
+                     <div className="text-amber-400 font-bold">+{selectedOption?.bonus} {selectedOption?.meter}</div>
+                     <div className="text-amber-500 font-bold">+5 Awe</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+                    <XCircle size={48} className="text-red-500" />
+                  </div>
+                  <h2 className="text-2xl font-serif text-white mb-2">Ritual Failed</h2>
+                  <p className="text-slate-400 text-sm mb-8 leading-relaxed">The focus was broken. The energy dissipates into the void.</p>
+                </>
+              )}
+              
+              <button 
+                onClick={() => { setPhase('prep'); setSelectedOption(null); }}
+                className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 transition-colors shadow-lg"
+              >
+                Continue
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-
-      {isSacred && (
-        <div className="absolute inset-0 pointer-events-none">
-           {Array.from({ length: 20 }).map((_, i) => (
-             <motion.div key={i} className="absolute w-1 h-1 bg-amber-400 rounded-full" animate={{ y: [-20, -500], x: Math.random() * 400, opacity: [0, 1, 0] }} transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }} style={{ left: `${Math.random() * 100}%`, bottom: '0%' }} />
-           ))}
-        </div>
-      )}
-
-      <div className="absolute top-8 text-center z-10">
-        <h2 className={`text-xl font-serif transition-colors ${isSacred ? 'text-amber-300' : 'text-amber-100'}`}>
-          {selectedOption?.name}
-        </h2>
-        {isSacred && <p className="text-[8px] uppercase tracking-[0.4em] text-amber-500 mt-1 animate-pulse">Collective Effervescence</p>}
-      </div>
-
-      {selectedOption?.mode === 'rhythm' && <RhythmGame onComplete={handleComplete} isSacred={isSacred} />}
-      {selectedOption?.mode === 'sequence' && <SequenceGame onComplete={handleComplete} isSacred={isSacred} />}
-      {selectedOption?.mode === 'focus' && <FocusGame onComplete={handleComplete} isSacred={isSacred} />}
-      
-      <button 
-        onClick={() => setPhase('prep')}
-        className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10"
-      >
-        Cancel Ritual
-      </button>
     </div>
   );
 };
@@ -219,14 +241,18 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
 
   return (
     <div className="w-full flex flex-col items-center gap-12" onPointerDown={handleTap}>
-      <div className="relative w-48 h-48 flex items-center justify-center">
-        <div className="absolute inset-0 rounded-full border-4 border-amber-500/20" />
+      <motion.div 
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="relative w-48 h-48 flex items-center justify-center"
+      >
+        <div className="absolute inset-0 rounded-full border-4 border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.1)]" />
         {isActive && <motion.div className="absolute inset-0 rounded-full border-2 border-amber-300 bg-amber-500/10" style={{ scale, opacity }} />}
-        <Zap className={isActive ? "text-amber-400" : "text-slate-800"} size={48} />
-      </div>
+        <Zap className={isActive ? "text-amber-400" : "text-slate-800"} size={64} style={{ filter: isActive ? 'drop-shadow(0 0 15px #f59e0b)' : 'none' }} />
+      </motion.div>
       <div className="text-center h-12">
-        <div className="text-2xl font-black text-amber-500">{combo} / 5</div>
-        <div className="text-xs text-slate-500 uppercase tracking-widest">{feedback || 'Tap in Rhythm'}</div>
+        <div className="text-3xl font-black text-amber-500 tracking-tighter">{combo} / 5</div>
+        <div className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{feedback || 'Tap in Rhythm'}</div>
       </div>
     </div>
   );
@@ -246,7 +272,7 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
   }, [round]);
 
   const generateSequence = (r: number) => {
-    const length = 1 + r; // 2, 3, 4, 5
+    const length = 1 + r; 
     const newSeq = Array.from({ length }, () => Math.floor(Math.random() * 4));
     setSequence(newSeq);
     setPlayerInput([]);
@@ -314,7 +340,7 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
           </motion.button>
         ))}
       </div>
-      <p className="text-xs text-slate-500 uppercase tracking-[0.2em] font-bold h-4">
+      <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold h-4">
         {isPlaying ? 'Watch the Pattern' : 'Repeat the Pattern'}
       </p>
     </div>
@@ -356,8 +382,8 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   return (
     <div className="w-full flex flex-col items-center gap-12">
       <div className="text-center">
-        <div className="text-2xl font-black text-amber-500">{Math.floor((holdTime / TARGET_TIME) * 100)}%</div>
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest">Ritual Focus</p>
+        <div className="text-3xl font-black text-amber-500 tracking-tighter">{Math.floor((holdTime / TARGET_TIME) * 100)}%</div>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Ritual Focus</p>
       </div>
 
       <div className="w-full max-w-[200px] h-4 bg-slate-900 rounded-full relative overflow-hidden border border-slate-800">
@@ -370,12 +396,20 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
         onPointerUp={() => setIsHolding(false)}
         onPointerLeave={() => setIsHolding(false)}
         animate={{ scale: isHolding ? 0.9 : 1, backgroundColor: isHolding ? '#f59e0b' : '#0f172a' }}
-        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none"
+        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none relative overflow-hidden"
       >
         <Fingerprint size={48} />
+        {isHolding && (
+          <motion.div 
+            initial={{ scale: 0, opacity: 0.5 }}
+            animate={{ scale: 2, opacity: 0 }}
+            transition={{ repeat: Infinity, duration: 1 }}
+            className="absolute inset-0 bg-amber-400 rounded-full"
+          />
+        )}
       </motion.button>
 
-      <p className="text-[10px] text-slate-600 uppercase tracking-widest animate-pulse">Hold to Center</p>
+      <p className="text-[10px] text-slate-600 uppercase tracking-widest animate-pulse font-bold">Hold to Center</p>
     </div>
   );
 };

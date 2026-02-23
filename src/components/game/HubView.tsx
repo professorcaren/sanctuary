@@ -203,7 +203,7 @@ const UpgradeButton: React.FC = () => {
       <div className="flex flex-col items-center">
         <span>Evolve to {nextStage.toUpperCase()}</span>
         <span className="text-[8px] opacity-70 mt-0.5">
-          {cost} Res • {requirement.value}% {requirement.meter.substring(0,3)}
+          {cost} Resources • {requirement.value}% {requirement.meter.substring(0,3)}
         </span>
       </div>
     </button>

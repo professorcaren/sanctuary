@@ -118,7 +118,7 @@ export const BureaucracyGame: React.FC = () => {
             </p>
             
             <div className="mt-4 pt-4 border-t border-slate-300 text-xs font-mono flex justify-between">
-              <span>Cost: {doc.cost} Res</span>
+              <span>Cost: {doc.cost} Resources</span>
               <span>Req: None</span>
             </div>
 

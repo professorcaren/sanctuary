@@ -51,7 +51,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
           {/* Resources and Members separate or smaller */}
           <div className="mt-2 flex justify-between items-center px-1">
              <div className="text-[9px] font-mono text-slate-400 uppercase tracking-widest flex gap-3">
-               <span>Res: <span className="text-amber-400 font-bold">{state.resources}</span></span>
+               <span>Resources: <span className="text-amber-400 font-bold">{state.resources}</span></span>
                <span>Flock: <span className="text-emerald-400 font-bold">{state.congregationSize}</span></span>
              </div>
              <div className="text-[9px] font-mono text-slate-500 uppercase">
