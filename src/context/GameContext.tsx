@@ -60,6 +60,7 @@ const INITIAL_STATE: GameState = {
   isGameOver: false,
   gameOverReason: null,
   disciples: [], // Initialize empty
+  startingTraits: [],
 };
 
 type Action =
@@ -73,7 +74,7 @@ type Action =
   | { type: 'SHOW_PROMPT'; prompt: LearningPrompt }
   | { type: 'DISMISS_PROMPT' }
   | { type: 'UNLOCK_THEORY'; id: string }
-  | { type: 'RESET_GAME' }
+  | { type: 'RESET_GAME'; traits?: string[] }
   | { type: 'TRIGGER_SCHISM' }
   | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
   | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number };
@@ -209,8 +210,18 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         archive: [...state.archive, entry]
       };
     case 'RESET_GAME':
+      const traits = action.traits || [];
+      const newMeters = { ...INITIAL_STATE.meters };
+      
+      if (traits.includes('charismatic')) newMeters.awe += 20;
+      if (traits.includes('organized')) newMeters.legitimacy += 20;
+      if (traits.includes('zealous')) newMeters.purity += 20;
+      if (traits.includes('communal')) newMeters.cohesion += 20;
+
       return {
         ...INITIAL_STATE,
+        meters: newMeters,
+        startingTraits: traits,
         archive: state.archive, // Keep the archive (meta-progression)
       };
     case 'TRIGGER_SCHISM':

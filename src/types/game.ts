@@ -50,6 +50,7 @@ export interface GameState {
   archive: ArchiveEntry[];
   isGameOver: boolean;
   gameOverReason: string | null;
+  startingTraits: string[];
 }
 
 export interface GameAction {

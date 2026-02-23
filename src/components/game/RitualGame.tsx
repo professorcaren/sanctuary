@@ -138,12 +138,14 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComplete
     if (!isActive) { setIsActive(true); return; }
     const diff = Math.abs(1 - progress.get());
     if (diff < 0.1) {
+      if (window.navigator.vibrate) window.navigator.vibrate(20);
       setCombo(c => {
         if (c + 1 >= 5) onComplete(true);
         return c + 1;
       });
       setFeedback('PERFECT');
     } else {
+      if (window.navigator.vibrate) window.navigator.vibrate([50, 50, 50]);
       setCombo(0);
       setFeedback('MISS');
     }
@@ -193,9 +195,13 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComple
     const nextInput = [...playerInput, idx];
     setPlayerInput(nextInput);
     if (sequence[playerInput.length] !== idx) {
+      if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
       onComplete(false);
-    } else if (nextInput.length === sequence.length) {
-      onComplete(true);
+    } else {
+      if (window.navigator.vibrate) window.navigator.vibrate(20);
+      if (nextInput.length === sequence.length) {
+        onComplete(true);
+      }
     }
   };
 
@@ -228,6 +234,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComplete 
 
   const animate = () => {
     if (isHolding) {
+      if (holdTime % 60 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
       setHoldTime(prev => {
         if (prev + 1 >= 300) { onComplete(true); return 300; }
         return prev + 1;
