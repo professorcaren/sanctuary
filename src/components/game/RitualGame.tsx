@@ -225,6 +225,7 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
   const { state } = useGame();
   const [combo, setCombo] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [inZone, setInZone] = useState(false);
   const progress = useMotionValue(0);
   
   // Dynamic Window: Movement=0.25 (50% total), Megachurch=0.05 (10% total)
@@ -239,8 +240,9 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
     }
   }, [state.stage]);
 
-  const scale = useTransform(progress, [0, 1], [0.2, 1.2]);
-  const opacity = useTransform(progress, [0, 0.5, 1], [1, 0.3, 1]);
+  // Animation: Pulse hits the 'boundary' at 0.5 progress
+  const scale = useTransform(progress, [0, 0.5, 1], [0.4, 1.1, 0.4]);
+  const opacity = useTransform(progress, [0, 0.5, 1], [0.2, 1, 0.2]);
   const startTimeRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
 
@@ -249,14 +251,17 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
     if (startTimeRef.current === null) startTimeRef.current = time;
     const currentProgress = ((time - startTimeRef.current) % 2000) / 2000;
     progress.set(currentProgress);
+    
+    // Visual feedback for 'the zone'
+    const isHit = Math.abs(currentProgress - 0.5) < timingWindow;
+    if (isHit !== inZone) setInZone(isHit);
   });
 
   const handleTap = () => {
     if (!isActive) { setIsActive(true); return; }
     
     const p = progress.get();
-    // Modulo-aware timing window
-    const isHit = p > (1 - timingWindow) || p < timingWindow;
+    const isHit = Math.abs(p - 0.5) < timingWindow;
 
     if (isHit) {
       if (window.navigator.vibrate) window.navigator.vibrate(20);
@@ -268,7 +273,6 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
       setFeedback('PERFECT');
     } else {
       if (window.navigator.vibrate) window.navigator.vibrate([50, 50, 50]);
-      // Soften penalty: decrement instead of full reset
       setCombo(c => Math.max(0, c - 1));
       setFeedback('MISS');
     }
@@ -282,13 +286,20 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         className="relative w-48 h-48 flex items-center justify-center"
       >
-        <div className="absolute inset-0 rounded-full border-4 border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.1)]" />
-        {isActive && <motion.div className="absolute inset-0 rounded-full border-2 border-amber-300 bg-amber-500/10" style={{ scale, opacity }} />}
-        <Zap className={isActive ? "text-amber-400" : "text-slate-800"} size={64} style={{ filter: isActive ? 'drop-shadow(0 0 15px #f59e0b)' : 'none' }} />
+        {/* Stationary Target Ring */}
+        <div className={`absolute inset-0 rounded-full border-4 transition-all duration-200 ${inZone ? 'border-amber-400 scale-105 shadow-[0_0_20px_rgba(251,191,36,0.4)]' : 'border-slate-800 scale-100 shadow-none'}`} />
+        
+        {/* The Pulsing Core */}
+        {isActive && <motion.div className="absolute inset-0 rounded-full border-2 border-amber-300 bg-amber-500/20" style={{ scale, opacity }} />}
+        
+        <div className="relative z-10 flex flex-col items-center">
+           <Zap className={isActive ? "text-amber-400" : "text-slate-800"} size={64} style={{ filter: isActive ? 'drop-shadow(0 0 15px #f59e0b)' : 'none' }} />
+           {!isActive && <p className="text-[8px] text-amber-500 font-bold uppercase tracking-widest mt-2 animate-pulse">Tap to Begin</p>}
+        </div>
       </motion.div>
       <div className="text-center h-12">
         <div className="text-3xl font-black text-amber-500 tracking-tighter">{combo} / 5</div>
-        <div className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{feedback || 'Tap in Rhythm'}</div>
+        <div className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{feedback || (isActive ? 'Tap at peak pulse' : 'Prepare yourself')}</div>
       </div>
     </button>
   );
