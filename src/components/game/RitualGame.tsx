@@ -243,6 +243,15 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
   // Animation: Pulse hits the 'boundary' at 0.5 progress
   const scale = useTransform(progress, [0, 0.5, 1], [0.4, 1.1, 0.4]);
   const opacity = useTransform(progress, [0, 0.5, 1], [0.2, 1, 0.2]);
+  
+  // Fill logic: rises as we approach 0.5, capped at 100% when inZone
+  const fillLevel = useTransform(progress, p => {
+    const dist = Math.abs(p - 0.5);
+    if (dist < timingWindow) return 0; // Fully filled (inset 0%)
+    const normalizedDist = (dist - timingWindow) / (0.5 - timingWindow);
+    return Math.min(100, Math.max(0, normalizedDist * 100));
+  });
+
   const startTimeRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
 
@@ -280,7 +289,7 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
   };
 
   return (
-    <button className="w-full flex flex-col items-center gap-12 outline-none" onPointerDown={handleTap} onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleTap(); } }}>
+    <button className="w-full flex flex-col items-center gap-12 outline-none touch-none" onPointerDown={handleTap} onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleTap(); } }}>
       <motion.div 
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -293,13 +302,25 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
         {isActive && <motion.div className="absolute inset-0 rounded-full border-2 border-amber-300 bg-amber-500/20" style={{ scale, opacity }} />}
         
         <div className="relative z-10 flex flex-col items-center">
-           <Zap className={isActive ? "text-amber-400" : "text-slate-800"} size={64} style={{ filter: isActive ? 'drop-shadow(0 0 15px #f59e0b)' : 'none' }} />
+           <div className="relative">
+              {/* Base Background Icon */}
+              <Zap className="text-slate-800" size={64} />
+              {/* Filling Overlay Icon */}
+              {isActive && (
+                <motion.div 
+                  className="absolute inset-0 text-amber-400"
+                  style={{ clipPath: useTransform(fillLevel, v => `inset(${v}% 0 0 0)`) }}
+                >
+                  <Zap size={64} style={{ filter: inZone ? 'drop-shadow(0 0 15px #f59e0b)' : 'none' }} />
+                </motion.div>
+              )}
+           </div>
            {!isActive && <p className="text-[8px] text-amber-500 font-bold uppercase tracking-widest mt-2 animate-pulse">Tap to Begin</p>}
         </div>
       </motion.div>
       <div className="text-center h-12">
         <div className="text-3xl font-black text-amber-500 tracking-tighter">{combo} / 5</div>
-        <div className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{feedback || (isActive ? 'Tap at peak pulse' : 'Prepare yourself')}</div>
+        <div className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">{feedback || (isActive ? 'Tap when full' : 'Prepare yourself')}</div>
       </div>
     </button>
   );
