@@ -91,12 +91,6 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
               label="Archive" 
               icon="📚" 
             />
-            <NavButton 
-              active={activeTab === 'leaderboard'} 
-              onClick={() => onTabChange('leaderboard')} 
-              label="Hall" 
-              icon="🏆" 
-            />
             
             {(state.stage === 'denomination' || state.stage === 'megachurch') && (
               <NavButton 

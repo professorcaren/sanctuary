@@ -14,15 +14,44 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
   const { dispatch } = useGame();
   const [step, setStep] = useState(0);
   
-  // Hardcoded scenarios for now, should come from a constants file
-  const scenario = {
-    q: "Master, why do we suffer?",
-    options: [
-      { text: "To test our faith.", points: 15 },
-      { text: "Because the world is flawed.", points: 10 },
-      { text: "Suffering builds character.", points: 5 },
-    ]
-  };
+  // Randomly select a scenario on component mount
+  const [scenario] = useState(() => {
+    const scenarios = [
+      {
+        q: "Master, why do we suffer?",
+        options: [
+          { text: "To test our faith.", points: 15 },
+          { text: "Because the world is flawed.", points: 10 },
+          { text: "Suffering builds character.", points: 5 },
+        ]
+      },
+      {
+        q: "How should we treat the non-believers?",
+        options: [
+          { text: "With radical compassion.", points: 10 },
+          { text: "As lost sheep to be guided.", points: 15 },
+          { text: "With cautious distance.", points: 5 },
+        ]
+      },
+      {
+        q: "What is the true purpose of our rituals?",
+        options: [
+          { text: "To manifest the divine energy.", points: 15 },
+          { text: "To unify our collective heart.", points: 15 },
+          { text: "To honor the ancient ways.", points: 10 },
+        ]
+      },
+      {
+        q: "The world is full of distractions. How do we stay pure?",
+        options: [
+          { text: "Through constant prayer.", points: 15 },
+          { text: "By ignoring the secular noise.", points: 10 },
+          { text: "By focusing on our inner light.", points: 15 },
+        ]
+      }
+    ];
+    return scenarios[Math.floor(Math.random() * scenarios.length)];
+  });
 
   const handleChoice = (points: number) => {
     dispatch({ type: 'TRAIN_DISCIPLE', id: disciple.id, outcome: 'success', points });
