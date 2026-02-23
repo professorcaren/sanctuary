@@ -3,8 +3,7 @@ import { useGame } from '../../context/GameContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, RefreshCcw, Landmark, Users } from 'lucide-react';
 
-// NOTE: You will need to replace this with your actual Published Google Sheet CSV URL
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTshZlbIr6_6Whid9UKsq_nm_oj_ImshZshZlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh_Zlh/pub?output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSrLgE2faoSHSHA4reYSmnr6Eu8L1Qd0uRdbuR7KRz3a9dnrsNMqNgQwoNabwP8rH6SEFkXoO8uD1Mt/pub?gid=0&single=true&output=csv';
 
 interface LeaderboardEntry {
   name: string;

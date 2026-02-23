@@ -30,23 +30,21 @@ export const GameOverModal: React.FC = () => {
   };
 
   const submitScore = () => {
-    // Hidden Google Form submission trick placeholders
-    const FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
-    const ENTRY_NAME = "entry.123456"; 
-    const ENTRY_STAGE = "entry.789012";
-    const ENTRY_MEMBERS = "entry.345678";
-    const ENTRY_RESOURCES = "entry.901234";
+    // Replace with your Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 
-    const formData = new FormData();
-    formData.append(ENTRY_NAME, state.churchName || 'Unnamed');
-    formData.append(ENTRY_STAGE, state.stage);
-    formData.append(ENTRY_MEMBERS, state.congregationSize.toString());
-    formData.append(ENTRY_RESOURCES, state.resources.toString());
-
-    fetch(FORM_URL, {
+    fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      body: formData
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: state.churchName || 'Unnamed',
+        stage: state.stage,
+        members: state.congregationSize,
+        resources: state.resources
+      })
     });
 
     setSubmitted(true);
