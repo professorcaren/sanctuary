@@ -51,6 +51,7 @@ export interface GameState {
   isGameOver: boolean;
   gameOverReason: string | null;
   startingTraits: string[];
+  buildings: string[]; // Track architectural upgrades
 }
 
 export interface GameAction {

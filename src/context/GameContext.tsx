@@ -59,8 +59,9 @@ const INITIAL_STATE: GameState = {
   archive: [],
   isGameOver: false,
   gameOverReason: null,
-  disciples: [], // Initialize empty
+  disciples: [],
   startingTraits: [],
+  buildings: [], // Initialize empty
 };
 
 type Action =
@@ -77,7 +78,8 @@ type Action =
   | { type: 'RESET_GAME'; traits?: string[] }
   | { type: 'TRIGGER_SCHISM' }
   | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
-  | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number };
+  | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number }
+  | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number };
 
 const EVENTS: Record<string, GameEvent[]> = {
 // ... existing events
@@ -274,6 +276,16 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           return { ...d, loyalty: Math.min(100, Math.max(0, newLoyalty)), role: newRole };
         }),
       };
+    case 'PURCHASE_UPGRADE':
+      return {
+        ...state,
+        resources: state.resources - action.cost,
+        buildings: [...state.buildings, action.id],
+        meters: {
+          ...state.meters,
+          awe: Math.min(100, state.meters.awe + action.aweBonus)
+        }
+      };
     case 'TICK':
       if (state.isGameOver) return state;
 
@@ -291,6 +303,14 @@ const gameReducer = (state: GameState, action: Action): GameState => {
            if (d.specialty === 'purity') disciplePurity += (d.role === 'elder' ? 0.5 : 0.1);
         }
       });
+
+      // Secularization Challenge: Awe decays faster as Legitimacy rises
+      // Base decay: 0.1. Add 0.05 for every 20 Legitimacy
+      const secularDecay = 0.1 + (state.meters.legitimacy / 400);
+
+      // Material Religion: Buildings provide passive awe stabilization
+      // Each building reduces decay or adds a tiny bit of awe
+      const buildingBonus = state.buildings.length * 0.05;
 
       const growthChance = state.meters.cohesion / 1000;
       const newMember = Math.random() < growthChance ? 1 : 0;
@@ -331,7 +351,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         seenEvents: newSeenEvents,
         meters: {
             ...state.meters,
-            awe: Math.max(0, state.meters.awe - 0.1 + discipleAwe),
+            awe: Math.max(0, state.meters.awe - secularDecay + discipleAwe + buildingBonus),
             purity: Math.min(100, state.meters.purity + disciplePurity)
         }
       };
