@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useGame } from '../../context/GameContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, Crown, Sparkles, Home, Landmark, Building2, Church } from 'lucide-react';
@@ -10,6 +10,12 @@ const UPGRADES = [
   { id: 'cathedral', name: 'Cathedral', icon: <Church size={14} />, cost: 1500, aweBonus: 20, minStage: 'denomination' },
   { id: 'megacomplex', name: 'Tabernacle', icon: <Building2 size={14} />, cost: 5000, aweBonus: 40, minStage: 'megachurch' },
 ];
+
+const SPECIALTY_COLORS: Record<string, string> = {
+  resources: 'bg-yellow-400',
+  purity: 'bg-blue-400',
+  awe: 'bg-purple-400',
+};
 
 export const HubView: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -28,38 +34,81 @@ export const HubView: React.FC = () => {
     return 'from-slate-900 to-slate-950';
   };
 
+  // Generate random stable properties for the flock dots
+  const flockDots = useMemo(() => {
+    const genericCount = Math.max(0, state.congregationSize - state.disciples.length);
+    const dots = [];
+    
+    // Add Disciples
+    state.disciples.forEach((d, i) => {
+      dots.push({
+        id: d.id,
+        color: SPECIALTY_COLORS[d.specialty] || 'bg-white',
+        size: d.role === 'elder' ? 'w-2 h-2' : 'w-1.5 h-1.5',
+        orbitRadius: 110 + (i * 5),
+        duration: 15 + (i * 2),
+        isDisciple: true
+      });
+    });
+
+    // Add Generic Flock (capped at 30 visuals to avoid lag)
+    for (let i = 0; i < Math.min(genericCount, 30); i++) {
+      dots.push({
+        id: `gen-${i}`,
+        color: 'bg-amber-400/60',
+        size: 'w-1 h-1',
+        orbitRadius: 100 + (Math.random() * 40),
+        duration: 20 + (Math.random() * 20),
+        isDisciple: false
+      });
+    }
+    return dots;
+  }, [state.congregationSize, state.disciples]);
+
   return (
     <div className={`h-full flex flex-col items-center p-4 bg-gradient-to-b ${getBackgroundGradient()} overflow-hidden relative`}>
       <OracleGuide />
       
-      {/* Main Building Visualization - Shrunk */}
-      <motion.div 
-        className="relative w-40 h-40 flex items-center justify-center bg-slate-800/30 rounded-full border-2 border-slate-700/50 shadow-xl shrink-0 mt-2"
-        animate={{ 
-          boxShadow: `0 0 ${state.meters.awe/2}px rgba(251,191,36,${state.meters.awe / 300})`,
-        }}
-      >
-        <motion.span 
-          key={getBuildingIcon()}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-7xl filter drop-shadow-xl"
-        >
-          {getBuildingIcon()}
-        </motion.span>
+      {/* Main Building Visualization */}
+      <div className="relative w-40 h-40 flex items-center justify-center shrink-0 mt-8">
         
-        {/* Orbiting Awe Particles */}
-        <motion.div 
-          className="absolute inset-[-10px] rounded-full border border-amber-500/5"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-amber-400 rounded-full shadow-[0_0_8px_#f59e0b]" />
-        </motion.div>
-      </motion.div>
+        {/* Orbiting Flock */}
+        {flockDots.map((dot) => (
+          <motion.div 
+            key={dot.id}
+            className="absolute rounded-full pointer-events-none"
+            animate={{ rotate: 360 }}
+            transition={{ duration: dot.duration, repeat: Infinity, ease: "linear" }}
+            style={{ 
+              width: dot.orbitRadius * 2, 
+              height: dot.orbitRadius * 2,
+              zIndex: dot.isDisciple ? 20 : 1
+            }}
+          >
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ${dot.color} ${dot.size} ${dot.isDisciple ? 'shadow-[0_0_8px_currentColor]' : ''}`} />
+          </motion.div>
+        ))}
 
-      {/* Material Religion - Shrunk Cards */}
-      <div className="mt-6 w-full px-2">
+        {/* The Building */}
+        <motion.div 
+          className="relative w-full h-full flex items-center justify-center bg-slate-800/30 rounded-full border-2 border-slate-700/50 shadow-xl z-10"
+          animate={{ 
+            boxShadow: `0 0 ${state.meters.awe/2}px rgba(251,191,36,${state.meters.awe / 300})`,
+          }}
+        >
+          <motion.span 
+            key={getBuildingIcon()}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-7xl filter drop-shadow-xl"
+          >
+            {getBuildingIcon()}
+          </motion.span>
+        </motion.div>
+      </div>
+
+      {/* Material Religion */}
+      <div className="mt-12 w-full px-2">
         <h2 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
           <Landmark size={10} /> Material Culture
         </h2>
@@ -92,9 +141,7 @@ export const HubView: React.FC = () => {
         </div>
       </div>
 
-      {/* Congregation Stats - Removed to save space */}
-
-      {/* Evolution Button - Compact */}
+      {/* Evolution Button */}
       <div className="mt-auto mb-2 w-full flex justify-center">
         <UpgradeButton />
       </div>
