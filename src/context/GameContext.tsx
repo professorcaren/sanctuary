@@ -76,6 +76,7 @@ const INITIAL_STATE: GameState = {
   hasSeenWelcome: false,
   isOracleActive: false,
   churchName: '',
+  currentView: 'hub',
   lastTrainingResult: null,
   globalDoctrine: {},
   bureaucracyGrandeurScore: 0,
@@ -103,6 +104,7 @@ type Action =
   | { type: 'DISMISS_ORACLE' }
   | { type: 'TRIGGER_ORACLE' }
   | { type: 'UPDATE_GRANDEUR'; value: number }
+  | { type: 'SET_VIEW'; view: string }
   | { type: 'SET_CHURCH_NAME'; name: string };
 
 const EVENTS: Record<string, GameEvent[]> = {
@@ -329,6 +331,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         churchName: action.name
       };
+    case 'SET_VIEW':
+      return {
+        ...state,
+        currentView: action.view
+      };
     case 'TRIGGER_SCHISM':
       return {
         ...state,
@@ -492,25 +499,6 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       let nextEvent = state.activeEvent;
       let newSeenEvents = state.seenEvents;
 
-      if (!state.activeEvent && Math.random() < 0.005) { 
-        let pool = EVENTS[state.stage] || EVENTS['movement'];
-        let possibleEvents = pool.filter(e => !state.seenEvents.includes(e.id));
-        
-        if (state.stage === 'megachurch' && state.decisionHistory.includes('barred_gates')) {
-           const scandal = EVENTS['megachurch'].find(e => e.id === 'past_scandal_exposed');
-           if (scandal && !state.seenEvents.includes(scandal.id)) {
-              nextEvent = scandal;
-           }
-        }
-
-        if (!nextEvent && possibleEvents.length > 0) {
-          nextEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
-          newSeenEvents = [...state.seenEvents, nextEvent.id];
-        } else if (!nextEvent && state.seenEvents.length > 0) {
-          newSeenEvents = [];
-        }
-      }
-
       // Trigger Oracle
       let nextOracle = false;
       if (!state.isOracleActive && Math.random() < 0.0001) {
@@ -526,7 +514,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         scandalProbability += 0.01;
       }
 
-      if (!state.activeEvent && Math.random() < scandalProbability) { 
+      // ONLY TRIGGER EVENTS IN HUB VIEW
+      if (state.currentView === 'hub' && !state.activeEvent && Math.random() < scandalProbability) { 
         let pool = EVENTS[state.stage] || EVENTS['movement'];
         
         // Prioritize Scandal if grandeur is high
@@ -539,6 +528,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 
         if (!nextEvent) {
           let possibleEvents = pool.filter(e => !state.seenEvents.includes(e.id));
+          
+          // Conditional megachurch scandal
           if (state.stage === 'megachurch' && state.decisionHistory.includes('barred_gates')) {
              const scandal = EVENTS['megachurch'].find(e => e.id === 'past_scandal_exposed');
              if (scandal && !state.seenEvents.includes(scandal.id)) {
@@ -550,7 +541,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
             nextEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
             newSeenEvents = [...state.seenEvents, nextEvent.id];
           } else if (!nextEvent && state.seenEvents.length > 0) {
-            newSeenEvents = [];
+            newSeenEvents = []; // Reset pool if exhausted
           }
         }
       }

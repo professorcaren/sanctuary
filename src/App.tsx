@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { GameProvider } from './context/GameContext';
+import React, { useState, useEffect } from 'react';
+import { GameProvider, useGame } from './context/GameContext';
 import { GameLayout } from './components/layout/GameLayout';
 import { HubView } from './components/game/HubView';
 import { SortingGame } from './components/game/SortingGame';
@@ -9,8 +9,14 @@ import { BureaucracyGame } from './components/game/BureaucracyGame';
 import { ArchiveView } from './components/game/ArchiveView';
 import { LeaderboardView } from './components/game/LeaderboardView';
 
-export default function App() {
+function AppContent() {
+  const { dispatch } = useGame();
   const [activeTab, setActiveTab] = useState('hub');
+
+  // Sync active tab with GameContext to prevent events during minigames
+  useEffect(() => {
+    dispatch({ type: 'SET_VIEW', view: activeTab });
+  }, [activeTab, dispatch]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -34,10 +40,16 @@ export default function App() {
   };
 
   return (
+    <GameLayout activeTab={activeTab} onTabChange={setActiveTab}>
+      {renderContent()}
+    </GameLayout>
+  );
+}
+
+export default function App() {
+  return (
     <GameProvider>
-      <GameLayout activeTab={activeTab} onTabChange={setActiveTab}>
-        {renderContent()}
-      </GameLayout>
+      <AppContent />
     </GameProvider>
   );
 }

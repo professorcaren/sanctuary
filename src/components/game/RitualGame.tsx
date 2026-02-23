@@ -227,20 +227,20 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
   const [feedback, setFeedback] = useState<string | null>(null);
   const progress = useMotionValue(0);
   
-  // Dynamic Window: Movement=0.15 (30% total), Megachurch=0.05 (10% total)
+  // Dynamic Window: Movement=0.25 (50% total), Megachurch=0.05 (10% total)
   const timingWindow = useMemo(() => {
     switch (state.stage) {
-      case 'movement': return 0.15;
-      case 'cult': return 0.10;
-      case 'sect': return 0.10;
-      case 'denomination': return 0.07;
+      case 'movement': return 0.25;
+      case 'cult': return 0.15;
+      case 'sect': return 0.15;
+      case 'denomination': return 0.10;
       case 'megachurch': return 0.05;
-      default: return 0.10;
+      default: return 0.15;
     }
   }, [state.stage]);
 
   const scale = useTransform(progress, [0, 1], [0.2, 1.2]);
-  const opacity = useTransform(progress, [0, 1], [0.3, 1]);
+  const opacity = useTransform(progress, [0, 0.5, 1], [1, 0.3, 1]);
   const startTimeRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
 

@@ -63,6 +63,7 @@ export interface GameState {
   hasSeenWelcome: boolean;
   isOracleActive: boolean;
   churchName: string;
+  currentView: string;
   lastTrainingResult: 'consistent' | 'contradiction' | 'new' | null;
   globalDoctrine: Record<string, string>; // Church-wide consistent answers
   bureaucracyGrandeurScore: number;
