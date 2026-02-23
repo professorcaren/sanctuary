@@ -83,7 +83,7 @@ export const HubView: React.FC = () => {
       <OracleGuide />
 
       {/* Main Building Visualization */}
-      <div className="relative w-40 h-40 flex items-center justify-center shrink-0 mt-8">
+      <div className="relative w-32 h-32 flex items-center justify-center shrink-0 mt-4">
 
         {/* Orbiting Flock */}
         {flockDots.map((dot) => (
@@ -128,7 +128,7 @@ export const HubView: React.FC = () => {
             key={getBuildingIcon()}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="text-7xl filter drop-shadow-xl"
+            className="text-6xl filter drop-shadow-xl"
           >
             {getBuildingIcon()}
           </motion.span>
@@ -136,7 +136,7 @@ export const HubView: React.FC = () => {
       </div>
 
       {/* Material Religion */}
-      <div className="mt-12 w-full px-2">
+      <div className="mt-8 w-full px-2">
         <h2 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
           <Landmark size={10} /> Material Culture
         </h2>

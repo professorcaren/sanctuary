@@ -226,9 +226,9 @@ export const SortingGame: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
-      
-      <div className="mb-8 text-center z-10">
+    <div className="h-full flex flex-col items-center justify-center p-4 bg-slate-950 relative overflow-hidden">
+
+      <div className="mb-4 text-center z-10">
         <h2 className="text-2xl font-serif text-slate-200">Sacred Sorting</h2>
         <div className="flex justify-center gap-4 mt-1">
            <div className="text-[10px] text-slate-500 font-mono">Progress: {ITEMS_PER_SESSION - cards.length} / {ITEMS_PER_SESSION}</div>
@@ -236,7 +236,7 @@ export const SortingGame: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative w-full max-w-[256px] h-96 flex items-center justify-center">
+      <div className="relative w-full max-w-[256px] h-72 flex items-center justify-center">
         <div className="absolute left-0 -translate-x-10 text-red-900/40 flex flex-col items-center"><Trash2 size={48} /></div>
         <div className="absolute right-0 translate-x-10 text-amber-900/40 flex flex-col items-center"><Sparkles size={48} /></div>
 
@@ -319,7 +319,7 @@ const Card: React.FC<{ item: Item; onSwipe: (dir: 'left' | 'right') => void, onE
       drag="x" dragConstraints={{ left: -200, right: 200 }}
       onDragEnd={(_, info) => { if (info.offset.x > 100) onSwipe('right'); else if (info.offset.x < -100) onSwipe('left'); }}
       animate={item.isCursed ? { x: [0, -2, 2, -2, 0], transition: { repeat: Infinity, duration: 0.1 } } : {}}
-      className={`absolute w-full max-w-[256px] h-80 rounded-2xl shadow-2xl border-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden ${item.isCursed ? 'border-red-600' : 'border-slate-800'}`}
+      className={`absolute w-full max-w-[256px] h-64 rounded-2xl shadow-2xl border-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none overflow-hidden ${item.isCursed ? 'border-red-600' : 'border-slate-800'}`}
     >
       {item.isCursed && (
         <div className="absolute top-4 flex items-center gap-1 text-red-500 animate-pulse">

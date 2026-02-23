@@ -291,7 +291,7 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
   };
 
   return (
-    <button className="w-full flex flex-col items-center gap-12 outline-none touch-none" onPointerDown={handleTap} onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleTap(); } }}>
+    <button className="w-full flex flex-col items-center gap-6 outline-none touch-none" onPointerDown={handleTap} onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleTap(); } }}>
       <motion.div 
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
