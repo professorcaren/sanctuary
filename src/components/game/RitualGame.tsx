@@ -226,14 +226,14 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
   const [isPlaying, setIsPlaying] = useState(true);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const TOTAL_ROUNDS = 3;
+  const TOTAL_ROUNDS = 4;
 
   useEffect(() => {
     generateSequence(round);
   }, [round]);
 
   const generateSequence = (r: number) => {
-    const length = 2 + r; // 3, 4, 5
+    const length = 1 + r; // 2, 3, 4, 5
     const newSeq = Array.from({ length }, () => Math.floor(Math.random() * 4));
     setSequence(newSeq);
     setPlayerInput([]);
@@ -280,7 +280,7 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
   return (
     <div className="w-full flex flex-col items-center gap-8">
       <div className="flex gap-2 mb-2">
-        {[1, 2, 3].map(r => (
+        {[1, 2, 3, 4].map(r => (
           <div key={r} className={`w-2 h-2 rounded-full ${round >= r ? 'bg-amber-500' : 'bg-slate-800'}`} />
         ))}
       </div>
