@@ -4,11 +4,7 @@
 
 Players take on the role of a founder leading a new religious movement. Starting from a humble "Circle of Seekers," they must navigate the tensions of institutionalization, boundary maintenance, and charismatic authority as they evolve into a Sect, Denomination, or Megachurch.
 
-<div align="center">
-<img width="1200" height="475" alt="Sanctuary Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
-## 🎓 Educational Goals
+## Educational Goals
 
 Sanctuary transforms abstract sociological theories into tangible game mechanics. Students experience:
 
@@ -18,7 +14,7 @@ Sanctuary transforms abstract sociological theories into tangible game mechanics
 *   **Church-Sect Typology:** Choosing between social integration (Sect) and high-tension isolation (Cult).
 *   **Collective Effervescence:** Engaging in synchronized rituals to generate shared emotional energy.
 
-## 🕹️ Key Mechanics
+## Key Mechanics
 
 *   **Five-Meter System:** Balance **Awe**, **Cohesion**, **Legitimacy**, **Purity**, and **Resources**. Neglecting any can lead to internal schisms, state crackdowns, or institutional "fade."
 *   **Branching Progression:** Your early decisions determine if your movement remains a socially-integrated Sect or hardens into a high-tension Cult.
@@ -28,7 +24,7 @@ Sanctuary transforms abstract sociological theories into tangible game mechanics
     *   **Inner Circle:** Recruit and train disciples, establishing a global doctrine that rewards consistency.
 *   **Bureaucracy Engine:** As the movement grows, manage the "Admin" phase with procedurally generated documents that force trade-offs between grandeur and legitimacy.
 
-## 🛠️ Technical Setup
+## Technical Setup
 
 Sanctuary is a single-page React application built with **Vite**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
 
@@ -55,7 +51,7 @@ Sanctuary is a single-page React application built with **Vite**, **TypeScript**
     npm run dev
     ```
 
-## 🌐 Deployment & Integration
+## Deployment & Integration
 
 ### Hosting
 The project is optimized for hosting on **GitHub Pages**, **Vercel**, or **Cloud Run**. The `deploy.yml` workflow is included for automated GitHub Actions deployment.
@@ -69,7 +65,7 @@ Sanctuary uses a Google Sheets backend for its "Hall of Manifestations." To host
 ### AI Oracle Guide
 The optional "Spirit Oracle" provides contextual hints using the Gemini API. It is enabled by providing the `VITE_GEMINI_API_KEY`.
 
-## 📜 License & Citation
+## License & Citation
 
 This project is designed for educational use. If you use Sanctuary in your curriculum or research, please cite:
 
