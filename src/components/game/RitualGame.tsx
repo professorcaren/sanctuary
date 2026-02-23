@@ -220,22 +220,33 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
 };
 
 const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
+  const [round, setRound] = useState(1);
   const [sequence, setSequence] = useState<number[]>([]);
   const [playerInput, setPlayerInput] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  const TOTAL_ROUNDS = 3;
+
   useEffect(() => {
-    const newSeq = Array.from({ length: 4 }, () => Math.floor(Math.random() * 4));
+    generateSequence(round);
+  }, [round]);
+
+  const generateSequence = (r: number) => {
+    const length = 2 + r; // 3, 4, 5
+    const newSeq = Array.from({ length }, () => Math.floor(Math.random() * 4));
     setSequence(newSeq);
+    setPlayerInput([]);
     playSequence(newSeq);
-  }, []);
+  };
 
   const playSequence = async (seq: number[]) => {
     setIsPlaying(true);
+    await new Promise(r => setTimeout(r, 800));
     for (let i = 0; i < seq.length; i++) {
       setActiveIndex(seq[i]);
-      await new Promise(r => setTimeout(r, 600));
+      if (window.navigator.vibrate) window.navigator.vibrate(10);
+      await new Promise(r => setTimeout(r, 500));
       setActiveIndex(null);
       await new Promise(r => setTimeout(r, 200));
     }
@@ -245,38 +256,52 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
   const handleInput = (idx: number) => {
     if (isPlaying) return;
     
-    // Visual feedback for tap
     setActiveIndex(idx);
     setTimeout(() => setActiveIndex(null), 150);
 
     const nextInput = [...playerInput, idx];
     setPlayerInput(nextInput);
+
     if (sequence[playerInput.length] !== idx) {
       if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
       onComplete(false);
     } else {
       if (window.navigator.vibrate) window.navigator.vibrate(20);
       if (nextInput.length === sequence.length) {
-        onComplete(true);
+        if (round >= TOTAL_ROUNDS) {
+          onComplete(true);
+        } else {
+          setTimeout(() => setRound(r => r + 1), 600);
+        }
       }
     }
   };
 
   return (
     <div className="w-full flex flex-col items-center gap-8">
+      <div className="flex gap-2 mb-2">
+        {[1, 2, 3].map(r => (
+          <div key={r} className={`w-2 h-2 rounded-full ${round >= r ? 'bg-amber-500' : 'bg-slate-800'}`} />
+        ))}
+      </div>
+      
       <div className="grid grid-cols-2 gap-4">
         {[0, 1, 2, 3].map(i => (
           <motion.button
             key={i}
-            animate={{ scale: activeIndex === i ? 1.1 : 1, backgroundColor: activeIndex === i ? '#f59e0b' : '#0f172a' }}
+            animate={{ 
+              scale: activeIndex === i ? 1.1 : 1, 
+              backgroundColor: activeIndex === i ? '#f59e0b' : '#0f172a',
+              borderColor: activeIndex === i ? '#fbbf24' : '#1e293b'
+            }}
             onPointerDown={() => handleInput(i)}
-            className="w-20 h-20 rounded-2xl border-2 border-slate-800 flex items-center justify-center text-amber-500 active:scale-95 transition-transform touch-none"
+            className="w-20 h-20 rounded-2xl border-2 flex items-center justify-center text-amber-500 active:scale-95 transition-transform touch-none shadow-xl"
           >
             <Users size={24} />
           </motion.button>
         ))}
       </div>
-      <p className="text-xs text-slate-500 uppercase tracking-widest">
+      <p className="text-xs text-slate-500 uppercase tracking-[0.2em] font-bold h-4">
         {isPlaying ? 'Watch the Pattern' : 'Repeat the Pattern'}
       </p>
     </div>
@@ -289,18 +314,21 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   const [drift, setDrift] = useState(50);
   const requestRef = useRef<number | null>(null);
 
+  const TARGET_TIME = 600; // Doubled duration
+
   const animate = () => {
     if (isHolding) {
       if (holdTime % 60 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
       setHoldTime(prev => {
-        if (prev + 1 >= 300) { onComplete(true); return 300; }
+        if (prev + 1 >= TARGET_TIME) { onComplete(true); return TARGET_TIME; }
         return prev + 1;
       });
       // Gently drift back to center when holding
       setDrift(prev => prev + (50 - prev) * 0.05);
     } else {
-      // Drift away randomly when not holding
-      setDrift(prev => prev + (Math.random() - 0.5) * 4);
+      // Drift away randomly when not holding - intensity scales with progress
+      const intensity = 4 + (holdTime / 100);
+      setDrift(prev => prev + (Math.random() - 0.5) * intensity);
     }
     requestRef.current = requestAnimationFrame(animate);
   };
@@ -318,7 +346,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   return (
     <div className="w-full flex flex-col items-center gap-12">
       <div className="text-center">
-        <div className="text-2xl font-black text-amber-500">{Math.floor((holdTime / 300) * 100)}%</div>
+        <div className="text-2xl font-black text-amber-500">{Math.floor((holdTime / TARGET_TIME) * 100)}%</div>
         <p className="text-[10px] text-slate-500 uppercase tracking-widest">Ritual Focus</p>
       </div>
 
