@@ -50,15 +50,28 @@ const RITUAL_OPTIONS: RitualOption[] = [
 ];
 
 export const RitualGame: React.FC = () => {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
   const [phase, setPhase] = useState<'prep' | 'action'>('prep');
   const [selectedOption, setSelectedOption] = useState<RitualOption | null>(null);
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  const isSacred = state.meters.awe > 80;
 
   const handleComplete = (success: boolean) => {
     if (success && selectedOption) {
+      if (isSacred) setIsFlashing(true);
       dispatch({ type: 'UPDATE_METER', meter: selectedOption.meter, value: selectedOption.bonus });
       dispatch({ type: 'UPDATE_METER', meter: 'awe', value: 5 });
       dispatch({ type: 'UNLOCK_THEORY', id: 'effervescence' });
+      
+      if (isSacred) {
+        setTimeout(() => {
+          setIsFlashing(false);
+          setPhase('prep');
+          setSelectedOption(null);
+        }, 1000);
+        return;
+      }
     }
     setPhase('prep');
     setSelectedOption(null);
@@ -97,18 +110,57 @@ export const RitualGame: React.FC = () => {
   }
 
   return (
-    <div className="h-full bg-slate-950 p-6 flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="absolute top-8 text-center">
-        <h2 className="text-xl font-serif text-amber-100">{selectedOption?.name}</h2>
+    <div className={`h-full p-6 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-1000 ${isSacred ? 'bg-amber-950/20' : 'bg-slate-950'}`}>
+      
+      {/* Sacred Flash Effect */}
+      <AnimatePresence>
+        {isFlashing && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-white pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Background Particles for High Awe */}
+      {isSacred && (
+        <div className="absolute inset-0 pointer-events-none">
+           {Array.from({ length: 20 }).map((_, i) => (
+             <motion.div
+               key={i}
+               className="absolute w-1 h-1 bg-amber-400 rounded-full"
+               animate={{ 
+                 y: [-20, -500],
+                 x: Math.random() * 400,
+                 opacity: [0, 1, 0]
+               }}
+               transition={{ 
+                 duration: 2 + Math.random() * 2,
+                 repeat: Infinity,
+                 delay: Math.random() * 2
+               }}
+               style={{ left: `${Math.random() * 100}%`, bottom: '0%' }}
+             />
+           ))}
+        </div>
+      )}
+
+      <div className="absolute top-8 text-center z-10">
+        <h2 className={`text-xl font-serif transition-colors ${isSacred ? 'text-amber-300' : 'text-amber-100'}`}>
+          {selectedOption?.name}
+        </h2>
+        {isSacred && <p className="text-[8px] uppercase tracking-[0.4em] text-amber-500 mt-1 animate-pulse">Collective Effervescence</p>}
       </div>
 
-      {selectedOption?.mode === 'rhythm' && <RhythmGame onComplete={handleComplete} />}
-      {selectedOption?.mode === 'sequence' && <SequenceGame onComplete={handleComplete} />}
-      {selectedOption?.mode === 'focus' && <FocusGame onComplete={handleComplete} />}
+      {selectedOption?.mode === 'rhythm' && <RhythmGame onComplete={handleComplete} isSacred={isSacred} />}
+      {selectedOption?.mode === 'sequence' && <SequenceGame onComplete={handleComplete} isSacred={isSacred} />}
+      {selectedOption?.mode === 'focus' && <FocusGame onComplete={handleComplete} isSacred={isSacred} />}
       
       <button 
         onClick={() => setPhase('prep')}
-        className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400"
+        className="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 z-10"
       >
         Cancel Ritual
       </button>
@@ -118,7 +170,7 @@ export const RitualGame: React.FC = () => {
 
 /* --- MINI GAMES --- */
 
-const RhythmGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComplete }) => {
+const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
   const [combo, setCombo] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
   const progress = useMotionValue(0);
@@ -167,7 +219,7 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComplete
   );
 };
 
-const SequenceGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComplete }) => {
+const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [playerInput, setPlayerInput] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -226,7 +278,7 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComple
   );
 };
 
-const FocusGame: React.FC<{ onComplete: (s: boolean) => void }> = ({ onComplete }) => {
+const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
   const [holdTime, setHoldTime] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [drift, setDrift] = useState(50);

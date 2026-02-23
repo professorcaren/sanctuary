@@ -23,6 +23,11 @@ export const SchismEventModal: React.FC = () => {
       }
     });
 
+    // Record specific decisions for the future
+    if (event.id === 'outsider' && choice.text === 'Bar the gates') {
+       dispatch({ type: 'RECORD_DECISION', id: 'barred_gates' });
+    }
+
     dispatch({ type: 'RESOLVE_EVENT' });
     
     // Check if we should trigger a major schism after certain events

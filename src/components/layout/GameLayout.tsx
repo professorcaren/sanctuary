@@ -15,9 +15,10 @@ import { GameOverModal } from '../ui/GameOverModal';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onTabChange }) => {
   const { state } = useGame();
+  const isProfane = state.meters.awe < 20 && state.stage !== 'cult';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden flex flex-col items-center">
+    <div className={`min-h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden flex flex-col items-center transition-all duration-1000 ${isProfane ? 'grayscale sepia-[0.2] brightness-75' : ''}`}>
       <SchismEventModal />
       <LearningPromptModal />
       <GameOverModal />

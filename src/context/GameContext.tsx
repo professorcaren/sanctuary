@@ -61,7 +61,8 @@ const INITIAL_STATE: GameState = {
   gameOverReason: null,
   disciples: [],
   startingTraits: [],
-  buildings: [], // Initialize empty
+  buildings: [],
+  decisionHistory: [],
 };
 
 type Action =
@@ -79,7 +80,8 @@ type Action =
   | { type: 'TRIGGER_SCHISM' }
   | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
   | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number }
-  | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number };
+  | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number }
+  | { type: 'RECORD_DECISION'; id: string };
 
 const EVENTS: Record<string, GameEvent[]> = {
 // ... existing events
@@ -158,6 +160,17 @@ const EVENTS: Record<string, GameEvent[]> = {
       choices: [
         { text: 'Go Prime Time', outcome: 'Huge growth, but the message is watered down.', effects: { resources: 100, congregationSize: 20, purity: -20 } },
         { text: 'Protect the Sacred', outcome: 'Awe is preserved for the faithful.', effects: { awe: 15, resources: -20 } },
+      ]
+    }
+  ],
+  'megachurch': [
+    {
+      id: 'past_scandal_exposed',
+      title: 'The Skeletons in the Closet',
+      description: 'A documentary reveals the "barred gates" of your early cult days. The public is outraged.',
+      choices: [
+        { text: 'Apologize and Repent', outcome: 'Legitimacy slowly recovers.', effects: { legitimacy: -20, resources: -100 } },
+        { text: 'Claim Religious Persecution', outcome: 'The flock is unified, but the world turns away.', effects: { cohesion: 20, legitimacy: -40 } },
       ]
     }
   ]
@@ -286,6 +299,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           awe: Math.min(100, state.meters.awe + action.aweBonus)
         }
       };
+    case 'RECORD_DECISION':
+      return {
+        ...state,
+        decisionHistory: [...state.decisionHistory, action.id]
+      };
     case 'TICK':
       if (state.isGameOver) return state;
 
@@ -330,15 +348,23 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       let newSeenEvents = state.seenEvents;
 
       if (!state.activeEvent && Math.random() < 0.005) { 
-        const possibleEvents = (EVENTS[state.stage] || EVENTS['cult']).filter(
-          e => !state.seenEvents.includes(e.id)
-        );
+        let pool = EVENTS[state.stage] || EVENTS['cult'];
         
-        if (possibleEvents.length > 0) {
+        // Filter out seen events
+        let possibleEvents = pool.filter(e => !state.seenEvents.includes(e.id));
+        
+        // Conditional Event Logic: Skeletons in the closet
+        if (state.stage === 'megachurch' && state.decisionHistory.includes('barred_gates')) {
+           const scandal = EVENTS['megachurch'].find(e => e.id === 'past_scandal_exposed');
+           if (scandal && !state.seenEvents.includes(scandal.id)) {
+              nextEvent = scandal;
+           }
+        }
+
+        if (!nextEvent && possibleEvents.length > 0) {
           nextEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
           newSeenEvents = [...state.seenEvents, nextEvent.id];
-        } else if (state.seenEvents.length > 0) {
-          // If we've seen everything, reset the history for this stage
+        } else if (!nextEvent && state.seenEvents.length > 0) {
           newSeenEvents = [];
         }
       }
