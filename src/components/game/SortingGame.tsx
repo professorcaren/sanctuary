@@ -90,7 +90,7 @@ export const SortingGame: React.FC = () => {
   };
 
   const handleSwipe = (direction: 'left' | 'right') => {
-    if (!activeCard) return;
+    if (!activeCard || state.activeEvent) return;
 
     const targetType = getItemType(activeCard);
     const isCorrect = (direction === 'right' && targetType === 'sacred') || 
@@ -131,7 +131,7 @@ export const SortingGame: React.FC = () => {
       
       {/* Law Announcement */}
       <AnimatePresence>
-        {currentLaw && (
+        {currentLaw && !state.activeEvent && (
           <motion.div 
             initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -100, opacity: 0 }}
             className="absolute top-4 left-4 right-4 z-50 bg-amber-600 text-black p-3 rounded-xl shadow-2xl flex items-center gap-3 border-2 border-amber-400"
