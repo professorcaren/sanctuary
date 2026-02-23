@@ -27,17 +27,24 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
       <div className="w-full max-w-md h-[100dvh] flex flex-col relative bg-slate-900 shadow-2xl border-x border-slate-800 overflow-hidden">
         
         {/* Top Bar - Meters */}
-        <header className="p-4 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 z-10 shrink-0">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <MeterBar type="awe" value={state.meters.awe} label="Awe" />
-            <MeterBar type="cohesion" value={state.meters.cohesion} label="Cohesion" />
-            <MeterBar type="legitimacy" value={state.meters.legitimacy} label="Legitimacy" />
-            <MeterBar type="purity" value={state.meters.purity} label="Purity" />
+        <header className="p-3 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 z-10 shrink-0">
+          <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-2 gap-x-4">
+               <MeterBar type="awe" value={state.meters.awe} label="Awe" />
+               <MeterBar type="cohesion" value={state.meters.cohesion} label="Coh" />
+            </div>
+            <div className="grid grid-cols-2 gap-x-4">
+               <MeterBar type="legitimacy" value={state.meters.legitimacy} label="Leg" />
+               <MeterBar type="purity" value={state.meters.purity} label="Pur" />
+            </div>
           </div>
           {/* Resources separate or smaller */}
-          <div className="mt-2 flex justify-center">
-             <div className="bg-slate-800 px-3 py-1 rounded-full text-xs font-mono text-yellow-400 border border-yellow-900/30">
-               Resources: {state.resources}
+          <div className="mt-2 flex justify-between items-center px-1">
+             <div className="text-[10px] font-mono text-amber-500/80 uppercase tracking-widest">
+               Resources: <span className="text-amber-400 font-bold">{state.resources}</span>
+             </div>
+             <div className="text-[10px] font-mono text-slate-500 uppercase">
+               {state.stage}
              </div>
           </div>
         </header>
