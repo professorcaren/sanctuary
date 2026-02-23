@@ -30,9 +30,10 @@ export interface Disciple {
   id: string;
   name: string;
   role: 'novice' | 'acolyte' | 'elder';
-  loyalty: number; // 0-100
+  loyalty: number;
   specialty: 'resources' | 'purity' | 'awe';
-  history: string[]; // Track what you taught them
+  history: string[]; 
+  doctrine: Record<string, string>; 
 }
 
 export interface GameState {
@@ -41,7 +42,7 @@ export interface GameState {
   resources: number;
   unlockedFeatures: string[];
   congregationSize: number;
-  disciples: Disciple[]; // New field
+  disciples: Disciple[];
   lastRitualTime: number;
   activeEvent: GameEvent | null;
   activePrompt: LearningPrompt | null;
@@ -55,7 +56,9 @@ export interface GameState {
   decisionHistory: string[]; 
   hasSeenWelcome: boolean;
   isOracleActive: boolean;
-  churchName: string; // New field
+  churchName: string;
+  lastTrainingResult: 'consistent' | 'contradiction' | 'new' | null;
+  globalDoctrine: Record<string, string>; // Church-wide consistent answers
 }
 
 export interface GameAction {

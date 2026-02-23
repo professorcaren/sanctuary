@@ -92,21 +92,7 @@ export const HubView: React.FC = () => {
         </div>
       </div>
 
-      {/* Congregation Stats - Tiny */}
-      <div className="mt-6 w-full px-2">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-            <Users size={10} /> The Flock
-          </h2>
-          <span className="text-[9px] font-mono text-slate-500">{state.congregationSize} Members</span>
-        </div>
-        
-        <div className="bg-slate-900/40 p-2 rounded-2xl border border-slate-800/50 min-h-[40px] flex flex-wrap gap-1 justify-center content-start overflow-hidden">
-          {Array.from({ length: Math.min(state.congregationSize, 30) }).map((_, i) => (
-            <div key={i} className="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[5px] opacity-40">👤</div>
-          ))}
-        </div>
-      </div>
+      {/* Congregation Stats - Removed to save space */}
 
       {/* Evolution Button - Compact */}
       <div className="mt-auto mb-2 w-full flex justify-center">

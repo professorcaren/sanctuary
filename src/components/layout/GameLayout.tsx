@@ -42,12 +42,13 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
                <MeterBar type="purity" value={state.meters.purity} label="Pur" />
             </div>
           </div>
-          {/* Resources separate or smaller */}
+          {/* Resources and Members separate or smaller */}
           <div className="mt-2 flex justify-between items-center px-1">
-             <div className="text-[10px] font-mono text-amber-500/80 uppercase tracking-widest">
-               Resources: <span className="text-amber-400 font-bold">{state.resources}</span>
+             <div className="text-[9px] font-mono text-slate-400 uppercase tracking-widest flex gap-3">
+               <span>Res: <span className="text-amber-400 font-bold">{state.resources}</span></span>
+               <span>Flock: <span className="text-emerald-400 font-bold">{state.congregationSize}</span></span>
              </div>
-             <div className="text-[10px] font-mono text-slate-500 uppercase">
+             <div className="text-[9px] font-mono text-slate-500 uppercase">
                {state.churchName || state.stage}
              </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
-import { User, Sparkles, BookOpen, Crown, UserPlus, GraduationCap, ArrowUpCircle } from 'lucide-react';
+import { User, Sparkles, BookOpen, Crown, UserPlus, GraduationCap, ArrowUpCircle, ShieldAlert, UserCheck } from 'lucide-react';
 import { Disciple } from '../../types/game';
 
 const SPECIALTIES = {
@@ -11,54 +11,64 @@ const SPECIALTIES = {
 };
 
 const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = ({ disciple, onClose }) => {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
   const [step, setStep] = useState(0);
   
   // Randomly select a scenario on component mount
   const [scenario] = useState(() => {
     const scenarios = [
       {
+        id: 'suffer',
         q: "Master, why do we suffer?",
         options: [
-          { text: "To test our faith.", points: 15 },
-          { text: "Because the world is flawed.", points: 10 },
-          { text: "Suffering builds character.", points: 5 },
+          { id: 'faith', text: "To test our faith.", points: 15 },
+          { id: 'flaw', text: "Because the world is flawed.", points: 10 },
+          { id: 'character', text: "Suffering builds character.", points: 5 },
         ]
       },
       {
+        id: 'outsiders',
         q: "How should we treat the non-believers?",
         options: [
-          { text: "With radical compassion.", points: 10 },
-          { text: "As lost sheep to be guided.", points: 15 },
-          { text: "With cautious distance.", points: 5 },
+          { id: 'compassion', text: "With radical compassion.", points: 10 },
+          { id: 'sheep', text: "As lost sheep to be guided.", points: 15 },
+          { id: 'distance', text: "With cautious distance.", points: 5 },
         ]
       },
       {
+        id: 'ritual',
         q: "What is the true purpose of our rituals?",
         options: [
-          { text: "To manifest the divine energy.", points: 15 },
-          { text: "To unify our collective heart.", points: 15 },
-          { text: "To honor the ancient ways.", points: 10 },
+          { id: 'divine', text: "To manifest the divine energy.", points: 15 },
+          { id: 'unity', text: "To unify our collective heart.", points: 15 },
+          { id: 'ancient', text: "To honor the ancient ways.", points: 10 },
         ]
       },
       {
+        id: 'purity',
         q: "The world is full of distractions. How do we stay pure?",
         options: [
-          { text: "Through constant prayer.", points: 15 },
-          { text: "By ignoring the secular noise.", points: 10 },
-          { text: "By focusing on our inner light.", points: 15 },
+          { id: 'prayer', text: "Through constant prayer.", points: 15 },
+          { id: 'noise', text: "By ignoring the secular noise.", points: 10 },
+          { id: 'light', text: "By focusing on our inner light.", points: 15 },
         ]
       }
     ];
     return scenarios[Math.floor(Math.random() * scenarios.length)];
   });
 
-  const handleChoice = (points: number) => {
-    dispatch({ type: 'TRAIN_DISCIPLE', id: disciple.id, outcome: 'success', points });
+  const handleChoice = (option: any) => {
+    dispatch({ 
+      type: 'TRAIN_DISCIPLE', 
+      id: disciple.id, 
+      questionId: scenario.id, 
+      answerId: option.id, 
+      points: option.points 
+    });
     setStep(1);
     setTimeout(() => {
       onClose();
-    }, 1500);
+    }, 2000);
   };
 
   return (
@@ -99,7 +109,7 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
               {scenario.options.map((opt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleChoice(opt.points)}
+                  onClick={() => handleChoice(opt)}
                   className="w-full p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/30 rounded-xl text-sm text-slate-300 transition-all text-left flex justify-between items-center group"
                 >
                   <span>{opt.text}</span>
@@ -110,15 +120,29 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
           </>
         ) : (
           <div className="text-center py-12">
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-green-500 font-bold text-2xl mb-2 flex flex-col items-center gap-2"
-            >
-              <Sparkles size={32} />
-              Lesson Learned
-            </motion.div>
-            <div className="text-xs text-slate-500 uppercase tracking-widest mt-2">Loyalty Increased</div>
+            <AnimatePresence mode="wait">
+              {state.lastTrainingResult === 'contradiction' && (
+                <motion.div key="bad" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-red-500">
+                   <ShieldAlert size={48} className="mx-auto mb-2" />
+                   <div className="font-bold text-xl uppercase tracking-tighter">Contradiction!</div>
+                   <p className="text-[10px] text-slate-500 mt-2">You gave a different answer last time. The disciple is confused and loyalty has plummeted.</p>
+                </motion.div>
+              )}
+              {state.lastTrainingResult === 'consistent' && (
+                <motion.div key="good" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-amber-400">
+                   <UserCheck size={48} className="mx-auto mb-2" />
+                   <div className="font-bold text-xl uppercase tracking-tighter">Consistent Doctrine</div>
+                   <p className="text-[10px] text-slate-500 mt-2">Your steadfastness reinforces their faith. Bonus loyalty gained.</p>
+                </motion.div>
+              )}
+              {state.lastTrainingResult === 'new' && (
+                <motion.div key="new" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-green-500">
+                   <Sparkles size={48} className="mx-auto mb-2" />
+                   <div className="font-bold text-xl uppercase tracking-tighter">New Doctrine</div>
+                   <p className="text-[10px] text-slate-500 mt-2">The disciple accepts your teaching into their heart.</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
@@ -138,7 +162,6 @@ const DiscipleCard: React.FC<{ disciple: Disciple; onClick: () => void }> = ({ d
       <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-slate-800 border border-slate-700 group-hover:scale-110 transition-transform shadow-lg z-10 relative`}>
         {disciple.role === 'elder' ? '👑' : disciple.role === 'acolyte' ? '🕯️' : '👤'}
         
-        {/* Progress Ring for Loyalty */}
         <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 36 36">
            <path className="text-slate-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="2" />
            <path className={spec.color} strokeDasharray={`${disciple.loyalty}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -158,7 +181,6 @@ const DiscipleCard: React.FC<{ disciple: Disciple; onClick: () => void }> = ({ d
         </div>
       </div>
       
-      {/* Background decoration */}
       <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full opacity-5 group-hover:opacity-10 transition-opacity ${spec.bg.replace('/10', '/30')}`} />
     </motion.button>
   );
@@ -182,7 +204,6 @@ export const SocializationGame: React.FC = () => {
   return (
     <div className="h-full bg-slate-950 p-4 flex flex-col relative overflow-hidden">
       
-      {/* Header */}
       <div className="mb-6 text-center shrink-0">
         <h2 className="text-2xl font-serif text-amber-100 flex items-center justify-center gap-2">
           <GraduationCap className="text-amber-500" /> Inner Circle
@@ -190,9 +211,7 @@ export const SocializationGame: React.FC = () => {
         <p className="text-xs text-slate-500 mt-1">Train disciples to secure the future</p>
       </div>
 
-      {/* Main Content: Roster */}
       <div className="flex-1 overflow-y-auto pb-20 space-y-3 pr-1">
-          {/* Recruit Button */}
           <button
             onClick={handleRecruit}
             disabled={state.congregationSize < 5}
@@ -207,7 +226,6 @@ export const SocializationGame: React.FC = () => {
             </div>
           </button>
 
-          {/* Disciple List */}
           <AnimatePresence>
             {state.disciples.map(disciple => (
               <DiscipleCard 
@@ -225,7 +243,6 @@ export const SocializationGame: React.FC = () => {
           )}
       </div>
 
-      {/* Training Session Modal */}
       <AnimatePresence>
         {selectedDiscipleId && selectedDisciple && (
           <TrainingSession 

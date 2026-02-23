@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { GameState, MeterType, GameEvent, LearningPrompt, ArchiveEntry } from '../types/game';
+import { GameState, MeterType, GameEvent, LearningPrompt, ArchiveEntry, Disciple } from '../types/game';
 
 const THEORY_ARCHIVE: Record<string, ArchiveEntry> = {
   'effervescence': {
@@ -66,6 +66,8 @@ const INITIAL_STATE: GameState = {
   hasSeenWelcome: false,
   isOracleActive: false,
   churchName: '',
+  lastTrainingResult: null,
+  globalDoctrine: {},
 };
 
 type Action =
@@ -82,7 +84,7 @@ type Action =
   | { type: 'RESET_GAME'; traits?: string[] }
   | { type: 'TRIGGER_SCHISM' }
   | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
-  | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number }
+  | { type: 'TRAIN_DISCIPLE'; id: string; questionId: string; answerId: string; points: number }
   | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number }
   | { type: 'RECORD_DECISION'; id: string }
   | { type: 'DISMISS_WELCOME' }
@@ -91,7 +93,6 @@ type Action =
   | { type: 'SET_CHURCH_NAME'; name: string };
 
 const EVENTS: Record<string, GameEvent[]> = {
-// ... existing events
   'cult': [
     {
       id: 'scandal',
@@ -244,10 +245,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...INITIAL_STATE,
         meters: newMeters,
         startingTraits: traits,
-        archive: state.archive, // Keep the archive (meta-progression)
-        hasSeenWelcome: true, // Don't show welcome again after reset
+        archive: state.archive, 
+        hasSeenWelcome: true, 
         isOracleActive: false,
         churchName: '',
+        globalDoctrine: {}, // Clear doctrine on full reset
       };
     case 'DISMISS_WELCOME':
       return {
@@ -259,15 +261,15 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         isOracleActive: false
       };
-    case 'SET_CHURCH_NAME':
-      return {
-        ...state,
-        churchName: action.name
-      };
     case 'TRIGGER_ORACLE':
       return {
         ...state,
         isOracleActive: true
+      };
+    case 'SET_CHURCH_NAME':
+      return {
+        ...state,
+        churchName: action.name
       };
     case 'TRIGGER_SCHISM':
       return {
@@ -298,26 +300,57 @@ const gameReducer = (state: GameState, action: Action): GameState => {
             // @ts-ignore
             specialty: action.specialty,
             history: [],
+            doctrine: {},
           },
         ],
       };
     case 'TRAIN_DISCIPLE':
+      let trainType: 'consistent' | 'contradiction' | 'new' = 'new';
+      
+      // @ts-ignore
+      const establishedAnswer = state.globalDoctrine[action.questionId];
+      
+      // @ts-ignore
+      if (!establishedAnswer) {
+        trainType = 'new';
+      // @ts-ignore
+      } else if (establishedAnswer === action.answerId) {
+        trainType = 'consistent';
+      } else {
+        trainType = 'contradiction';
+      }
+
+      const updatedDiscs = state.disciples.map(d => {
+        // @ts-ignore
+        if (d.id !== action.id) return d;
+        
+        let pointsChange = 0;
+        if (trainType === 'contradiction') pointsChange = -30;
+        else if (trainType === 'consistent') pointsChange = 10;
+        // @ts-ignore
+        else pointsChange = action.points;
+
+        const newLoyalty = Math.min(100, Math.max(0, d.loyalty + pointsChange));
+        let newRole = d.role;
+        if (d.role === 'novice' && newLoyalty >= 80) newRole = 'acolyte';
+        if (d.role === 'acolyte' && newLoyalty >= 100) newRole = 'elder';
+
+        return { ...d, loyalty: newLoyalty, role: newRole };
+      });
+
       return {
         ...state,
-        disciples: state.disciples.map(d => {
+        disciples: updatedDiscs,
+        lastTrainingResult: trainType,
+        globalDoctrine: {
+          ...state.globalDoctrine,
           // @ts-ignore
-          if (d.id !== action.id) return d;
-          
-          // @ts-ignore
-          let newLoyalty = d.loyalty + (action.outcome === 'success' ? action.points : -5);
-          let newRole = d.role;
-          
-          // Promotion Logic
-          if (d.role === 'novice' && newLoyalty >= 80) newRole = 'acolyte';
-          if (d.role === 'acolyte' && newLoyalty >= 100) newRole = 'elder';
-          
-          return { ...d, loyalty: Math.min(100, Math.max(0, newLoyalty)), role: newRole };
-        }),
+          [action.questionId]: action.answerId
+        },
+        meters: {
+          ...state.meters,
+          cohesion: trainType === 'contradiction' ? Math.max(0, state.meters.cohesion - 15) : state.meters.cohesion
+        }
       };
     case 'PURCHASE_UPGRADE':
       return {
@@ -352,12 +385,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         }
       });
 
-      // Secularization Challenge: Awe decays faster as Legitimacy rises
-      // Base decay: 0.1. Add 0.05 for every 20 Legitimacy
+      // Secularization Challenge
       const secularDecay = 0.1 + (state.meters.legitimacy / 400);
-
-      // Material Religion: Buildings provide passive awe stabilization
-      // Each building reduces decay or adds a tiny bit of awe
       const buildingBonus = state.buildings.length * 0.05;
 
       const growthChance = state.meters.cohesion / 1000;
@@ -379,11 +408,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 
       if (!state.activeEvent && Math.random() < 0.005) { 
         let pool = EVENTS[state.stage] || EVENTS['cult'];
-        
-        // Filter out seen events
         let possibleEvents = pool.filter(e => !state.seenEvents.includes(e.id));
         
-        // Conditional Event Logic: Skeletons in the closet
         if (state.stage === 'megachurch' && state.decisionHistory.includes('barred_gates')) {
            const scandal = EVENTS['megachurch'].find(e => e.id === 'past_scandal_exposed');
            if (scandal && !state.seenEvents.includes(scandal.id)) {
@@ -399,7 +425,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         }
       }
 
-      // Trigger Oracle every ~15 mins or manually on stage advance
+      // Trigger Oracle
       let nextOracle = false;
       if (!state.isOracleActive && Math.random() < 0.0001) {
         nextOracle = true;
