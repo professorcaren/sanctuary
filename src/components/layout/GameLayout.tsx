@@ -11,6 +11,7 @@ interface GameLayoutProps {
 
 import { SchismEventModal } from '../game/SchismEventModal';
 import { LearningPromptModal } from '../ui/LearningPromptModal';
+import { GameOverModal } from '../ui/GameOverModal';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onTabChange }) => {
   const { state } = useGame();
@@ -19,6 +20,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden flex flex-col items-center">
       <SchismEventModal />
       <LearningPromptModal />
+      <GameOverModal />
       {/* Mobile Container Constraint */}
       <div className="w-full max-w-md h-screen flex flex-col relative bg-slate-900 shadow-2xl border-x border-slate-800">
         

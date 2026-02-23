@@ -57,6 +57,8 @@ const INITIAL_STATE: GameState = {
   seenPrompts: [],
   seenEvents: [],
   archive: [],
+  isGameOver: false,
+  gameOverReason: null,
 };
 
 type Action =
@@ -69,7 +71,9 @@ type Action =
   | { type: 'RESOLVE_EVENT' }
   | { type: 'SHOW_PROMPT'; prompt: LearningPrompt }
   | { type: 'DISMISS_PROMPT' }
-  | { type: 'UNLOCK_THEORY'; id: string };
+  | { type: 'UNLOCK_THEORY'; id: string }
+  | { type: 'RESET_GAME' }
+  | { type: 'TRIGGER_SCHISM' };
 
 const EVENTS: Record<string, GameEvent[]> = {
   'cult': [
@@ -113,11 +117,11 @@ const EVENTS: Record<string, GameEvent[]> = {
     },
     {
       id: 'routinization_crisis',
-      title: 'The Need for Order',
-      description: 'The movement is growing too fast for a single leader to manage.',
+      title: 'The Great Schism',
+      description: 'The movement is growing too fast. A faction refuses to accept the new order. A split is inevitable.',
       choices: [
-        { text: 'Appoint Elders (Bureaucracy)', outcome: 'Stability increases, but the "fire" dims.', effects: { legitimacy: 20, awe: -10, cohesion: 5 } },
-        { text: 'Keep it Personal (Charisma)', outcome: 'Awe remains high, but chaos reigns.', effects: { awe: 15, legitimacy: -10, resources: -20 } },
+        { text: 'Appoint Elders (Bureaucracy)', outcome: 'Stability increases, but the faction leaves with your wealth.', effects: { legitimacy: 20, awe: -10, cohesion: 5 } },
+        { text: 'Keep it Personal (Charisma)', outcome: 'The fire remains, but the rationalists desert you.', effects: { awe: 15, legitimacy: -10, resources: -20 } },
       ]
     },
     {
@@ -200,11 +204,41 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         archive: [...state.archive, entry]
       };
+    case 'RESET_GAME':
+      return {
+        ...INITIAL_STATE,
+        archive: state.archive, // Keep the archive (meta-progression)
+      };
+    case 'TRIGGER_SCHISM':
+      return {
+        ...state,
+        congregationSize: Math.floor(state.congregationSize / 2),
+        resources: Math.floor(state.resources / 3),
+        meters: {
+          ...state.meters,
+          cohesion: 30, // Schisms destroy cohesion
+          awe: Math.min(100, state.meters.awe + 20), // But focus the remaining faithful
+        },
+        activeEvent: null,
+      };
     case 'TICK':
+      if (state.isGameOver) return state;
+
       const passiveIncome = Math.floor(state.congregationSize / 10);
       const growthChance = state.meters.cohesion / 1000;
       const newMember = Math.random() < growthChance ? 1 : 0;
       
+      // Loss Condition Checks
+      if (state.meters.purity <= 0) {
+        return { ...state, isGameOver: true, gameOverReason: 'INTERNAL INFIGHTING: Your lack of purity led to a civil war within the sanctuary. The group has dissolved into bitter factions.' };
+      }
+      if (state.meters.legitimacy <= 0) {
+        return { ...state, isGameOver: true, gameOverReason: 'STATE CRACKDOWN: Your lack of legitimacy caught the eye of the authorities. A raid has shut down your operations.' };
+      }
+      if (state.meters.awe <= 0 && state.stage !== 'cult') {
+        return { ...state, isGameOver: true, gameOverReason: 'THE FADE: Without awe, your followers have realized this is just another social club. They have drifted away to seek the truly sacred elsewhere.' };
+      }
+
       let nextEvent = state.activeEvent;
       let newSeenEvents = state.seenEvents;
 

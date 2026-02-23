@@ -24,6 +24,12 @@ export const SchismEventModal: React.FC = () => {
     });
 
     dispatch({ type: 'RESOLVE_EVENT' });
+    
+    // Check if we should trigger a major schism after certain events
+    if (event.id === 'routinization_crisis') {
+       dispatch({ type: 'TRIGGER_SCHISM' });
+       // No separate modal for now, just show result
+    }
   };
 
   return (

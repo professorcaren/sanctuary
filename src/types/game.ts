@@ -38,6 +38,8 @@ export interface GameState {
   seenPrompts: string[];
   seenEvents: string[];
   archive: ArchiveEntry[];
+  isGameOver: boolean;
+  gameOverReason: string | null;
 }
 
 export interface GameAction {
