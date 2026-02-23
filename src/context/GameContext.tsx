@@ -63,6 +63,7 @@ const INITIAL_STATE: GameState = {
   startingTraits: [],
   buildings: [],
   decisionHistory: [],
+  hasSeenWelcome: false,
 };
 
 type Action =
@@ -81,7 +82,8 @@ type Action =
   | { type: 'RECRUIT_DISCIPLE'; name: string; specialty: 'resources' | 'purity' | 'awe' }
   | { type: 'TRAIN_DISCIPLE'; id: string; outcome: 'success' | 'fail'; points: number }
   | { type: 'PURCHASE_UPGRADE'; id: string; cost: number; aweBonus: number }
-  | { type: 'RECORD_DECISION'; id: string };
+  | { type: 'RECORD_DECISION'; id: string }
+  | { type: 'DISMISS_WELCOME' };
 
 const EVENTS: Record<string, GameEvent[]> = {
 // ... existing events
@@ -238,6 +240,12 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         meters: newMeters,
         startingTraits: traits,
         archive: state.archive, // Keep the archive (meta-progression)
+        hasSeenWelcome: true, // Don't show welcome again after reset
+      };
+    case 'DISMISS_WELCOME':
+      return {
+        ...state,
+        hasSeenWelcome: true
       };
     case 'TRIGGER_SCHISM':
       return {

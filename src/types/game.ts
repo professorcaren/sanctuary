@@ -52,7 +52,8 @@ export interface GameState {
   gameOverReason: string | null;
   startingTraits: string[];
   buildings: string[]; 
-  decisionHistory: string[]; // New field
+  decisionHistory: string[]; 
+  hasSeenWelcome: boolean;
 }
 
 export interface GameAction {
