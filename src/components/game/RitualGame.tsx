@@ -244,6 +244,11 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
 
   const handleInput = (idx: number) => {
     if (isPlaying) return;
+    
+    // Visual feedback for tap
+    setActiveIndex(idx);
+    setTimeout(() => setActiveIndex(null), 150);
+
     const nextInput = [...playerInput, idx];
     setPlayerInput(nextInput);
     if (sequence[playerInput.length] !== idx) {
@@ -264,8 +269,8 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
           <motion.button
             key={i}
             animate={{ scale: activeIndex === i ? 1.1 : 1, backgroundColor: activeIndex === i ? '#f59e0b' : '#0f172a' }}
-            onClick={() => handleInput(i)}
-            className="w-20 h-20 rounded-2xl border-2 border-slate-800 flex items-center justify-center text-amber-500"
+            onPointerDown={() => handleInput(i)}
+            className="w-20 h-20 rounded-2xl border-2 border-slate-800 flex items-center justify-center text-amber-500 active:scale-95 transition-transform touch-none"
           >
             <Users size={24} />
           </motion.button>
