@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimationFrame } from 'motion/react';
 import { useGame } from '../../context/GameContext';
-import { Zap, Users, Shield, Sparkles, Moon, Fingerprint } from 'lucide-react';
+import { Zap, Users, Shield, Sparkles, Moon, Fingerprint, CheckCircle2, XCircle } from 'lucide-react';
 
 type RitualMode = 'rhythm' | 'sequence' | 'focus';
 
@@ -51,13 +51,15 @@ const RITUAL_OPTIONS: RitualOption[] = [
 
 export const RitualGame: React.FC = () => {
   const { state, dispatch } = useGame();
-  const [phase, setPhase] = useState<'prep' | 'action'>('prep');
+  const [phase, setPhase] = useState<'prep' | 'action' | 'result'>('prep');
   const [selectedOption, setSelectedOption] = useState<RitualOption | null>(null);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [lastResult, setLastResult] = useState<boolean>(false);
 
   const isSacred = state.meters.awe > 80;
 
   const handleComplete = (success: boolean) => {
+    setLastResult(success);
     if (success && selectedOption) {
       if (isSacred) setIsFlashing(true);
       dispatch({ type: 'UPDATE_METER', meter: selectedOption.meter, value: selectedOption.bonus });
@@ -65,16 +67,10 @@ export const RitualGame: React.FC = () => {
       dispatch({ type: 'UNLOCK_THEORY', id: 'effervescence' });
       
       if (isSacred) {
-        setTimeout(() => {
-          setIsFlashing(false);
-          setPhase('prep');
-          setSelectedOption(null);
-        }, 1000);
-        return;
+        setTimeout(() => setIsFlashing(false), 1000);
       }
     }
-    setPhase('prep');
-    setSelectedOption(null);
+    setPhase('result');
   };
 
   if (phase === 'prep') {
@@ -109,40 +105,57 @@ export const RitualGame: React.FC = () => {
     );
   }
 
+  if (phase === 'result') {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-8 bg-slate-950 text-center">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl w-full max-w-xs"
+        >
+          {lastResult ? (
+            <>
+              <CheckCircle2 size={64} className="text-green-500 mx-auto mb-6" />
+              <h2 className="text-2xl font-serif text-white mb-2">Ritual Complete</h2>
+              <p className="text-slate-400 text-sm mb-6">The group feels the collective surge.</p>
+              <div className="bg-slate-800 rounded-xl p-4 mb-8">
+                 <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Rewards</div>
+                 <div className="text-amber-400 font-bold">+{selectedOption?.bonus} {selectedOption?.meter}</div>
+                 <div className="text-amber-500 font-bold">+5 Awe</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <XCircle size={64} className="text-red-500 mx-auto mb-6" />
+              <h2 className="text-2xl font-serif text-white mb-2">Ritual Failed</h2>
+              <p className="text-slate-400 text-sm mb-8">The focus was broken. The energy dissipates into the void.</p>
+            </>
+          )}
+          
+          <button 
+            onClick={() => { setPhase('prep'); setSelectedOption(null); }}
+            className="w-full py-4 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors"
+          >
+            Continue
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className={`h-full p-6 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-1000 ${isSacred ? 'bg-amber-950/20' : 'bg-slate-950'}`}>
       
-      {/* Sacred Flash Effect */}
       <AnimatePresence>
         {isFlashing && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-white pointer-events-none"
-          />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-white pointer-events-none" />
         )}
       </AnimatePresence>
 
-      {/* Background Particles for High Awe */}
       {isSacred && (
         <div className="absolute inset-0 pointer-events-none">
            {Array.from({ length: 20 }).map((_, i) => (
-             <motion.div
-               key={i}
-               className="absolute w-1 h-1 bg-amber-400 rounded-full"
-               animate={{ 
-                 y: [-20, -500],
-                 x: Math.random() * 400,
-                 opacity: [0, 1, 0]
-               }}
-               transition={{ 
-                 duration: 2 + Math.random() * 2,
-                 repeat: Infinity,
-                 delay: Math.random() * 2
-               }}
-               style={{ left: `${Math.random() * 100}%`, bottom: '0%' }}
-             />
+             <motion.div key={i} className="absolute w-1 h-1 bg-amber-400 rounded-full" animate={{ y: [-20, -500], x: Math.random() * 400, opacity: [0, 1, 0] }} transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }} style={{ left: `${Math.random() * 100}%`, bottom: '0%' }} />
            ))}
         </div>
       )}
@@ -314,7 +327,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
   const [drift, setDrift] = useState(50);
   const requestRef = useRef<number | null>(null);
 
-  const TARGET_TIME = 600; // Doubled duration
+  const TARGET_TIME = 600; 
 
   const animate = () => {
     if (isHolding) {
@@ -323,10 +336,8 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
         if (prev + 1 >= TARGET_TIME) { onComplete(true); return TARGET_TIME; }
         return prev + 1;
       });
-      // Gently drift back to center when holding
       setDrift(prev => prev + (50 - prev) * 0.05);
     } else {
-      // Drift away randomly when not holding - intensity scales with progress
       const intensity = 4 + (holdTime / 100);
       setDrift(prev => prev + (Math.random() - 0.5) * intensity);
     }
@@ -338,7 +349,6 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
     return () => cancelAnimationFrame(requestRef.current!);
   }, [isHolding]);
 
-  // Fail if drift goes too far
   useEffect(() => {
     if (drift < 10 || drift > 90) onComplete(false);
   }, [drift]);
@@ -351,10 +361,7 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
       </div>
 
       <div className="w-full max-w-[200px] h-4 bg-slate-900 rounded-full relative overflow-hidden border border-slate-800">
-        <motion.div 
-          className="absolute top-0 bottom-0 w-4 bg-amber-500 shadow-[0_0_15px_#f59e0b]"
-          style={{ left: `${drift}%` }}
-        />
+        <motion.div className="absolute top-0 bottom-0 w-4 bg-amber-500 shadow-[0_0_15px_#f59e0b]" style={{ left: `${drift}%` }} />
         <div className="absolute inset-0 flex justify-center"><div className="w-0.5 h-full bg-slate-700" /></div>
       </div>
 
