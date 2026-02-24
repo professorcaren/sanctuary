@@ -10,14 +10,14 @@ const ARCHETYPES: { id: ArchetypeType; label: string; icon: any; description: st
     label: 'The Charismatic', 
     icon: <Sparkles size={18} />, 
     description: 'A natural leader whose charismatic authority draws followers.',
-    bonus: 'Balanced start' 
+    bonus: 'Slower Awe decay — effervescence comes naturally'
   },
   { 
     id: 'mystic', 
     label: 'The Mystic', 
     icon: <Zap size={18} />, 
     description: 'A visionary whose ecstatic experiences generate collective effervescence.',
-    bonus: '+30 Awe, -20 Legitimacy' 
+    bonus: 'Slowest Awe decay — visions sustain collective energy'
   },
   { 
     id: 'scholar', 
@@ -31,7 +31,7 @@ const ARCHETYPES: { id: ArchetypeType; label: string; icon: any; description: st
     label: 'The Administrator', 
     icon: <Crown size={18} />, 
     description: 'An organizer who routinizes charisma into lasting institutions.',
-    bonus: 'Bureaucracy unlocked, +400 Resources' 
+    bonus: 'Bureaucracy unlocked, +2 Resources/tick'
   },
 ];
 

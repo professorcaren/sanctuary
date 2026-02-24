@@ -286,11 +286,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       let initialArchive: ArchiveEntry[] = [];
 
       // Archetype Baseline Modifiers
-      if (archetype === 'mystic') {
-        newMeters.awe += 30;
-        newMeters.legitimacy -= 20;
-      } else if (archetype === 'administrator') {
-        initialResources = 500;
+      if (archetype === 'administrator') {
         initialUnlocked = ['sorting', 'ritual', 'bureaucracy'];
       } else if (archetype === 'scholar') {
         initialArchive = [THEORY_ARCHIVE['sacred_profane'], THEORY_ARCHIVE['socialization']];
@@ -547,8 +543,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         nextOracle = true;
       }
 
-      // Archetype Specific: Scholar faster purity gain
+      // Archetype-specific per-tick bonuses
+      const charismaticAweBonus = state.archetype === 'charismatic' ? 0.10 : 0;
+      const mysticAweBonus = state.archetype === 'mystic' ? 0.15 : 0;
       const scholarPurityBonus = state.archetype === 'scholar' ? 0.05 : 0;
+      const administratorResBonus = state.archetype === 'administrator' ? 2 : 0;
 
       // Dynamic Event: Scandal probability based on grandeur
       let scandalProbability = 0.005;
@@ -591,13 +590,13 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       return {
         ...state,
         isOracleActive: nextOracle || state.isOracleActive,
-        resources: Math.max(0, state.resources + passiveIncome + discipleResources - buildingUpkeep),
+        resources: Math.max(0, state.resources + passiveIncome + discipleResources - buildingUpkeep + administratorResBonus),
         congregationSize: state.congregationSize + newMember,
         activeEvent: nextEvent,
         seenEvents: newSeenEvents,
         meters: {
             ...state.meters,
-            awe: Math.max(0, Math.min(100, state.meters.awe - secularDecay + discipleAwe + buildingBonus + cultAweBonus)),
+            awe: Math.max(0, Math.min(100, state.meters.awe - secularDecay + discipleAwe + buildingBonus + cultAweBonus + charismaticAweBonus + mysticAweBonus)),
             purity: Math.max(0, Math.min(100, state.meters.purity - purityDecay + disciplePurity + scholarPurityBonus)),
             legitimacy: Math.max(0, Math.min(100, state.meters.legitimacy - cultLegitimacyDecay - legitimacyDecay)),
             cohesion: Math.max(0, Math.min(100, state.meters.cohesion - cohesionDecay + cultCohesionBonus))
