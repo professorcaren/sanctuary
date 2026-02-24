@@ -47,6 +47,19 @@ function AppContent() {
 }
 
 export default function App() {
+  const [hash, setHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  // Standalone leaderboard for instructors: /sanctuary/#leaderboard
+  if (hash === '#leaderboard') {
+    return <LeaderboardView standalone />;
+  }
+
   return (
     <GameProvider>
       <AppContent />
