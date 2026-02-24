@@ -1,15 +1,60 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Crown, Home, Landmark, Building2, Church } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { OracleGuide } from '../ui/OracleGuide';
 
-const UPGRADES = [
-  { id: 'basement', name: 'Basement', icon: <Home size={14} />, cost: 50, aweBonus: 5, minStage: 'movement' },
-  { id: 'chapel', name: 'Chapel', icon: <Landmark size={14} />, cost: 300, aweBonus: 10, minStage: 'sect' },
-  { id: 'cathedral', name: 'Cathedral', icon: <Church size={14} />, cost: 1500, aweBonus: 20, minStage: 'congregation' },
-  { id: 'megacomplex', name: 'Tabernacle', icon: <Building2 size={14} />, cost: 5000, aweBonus: 40, minStage: 'megachurch' },
+interface UpgradeOption {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  aweBonus: number;
+}
+
+interface UpgradeTier {
+  minStage: string;
+  cost: number;
+  options: UpgradeOption[];
+}
+
+const UPGRADE_TIERS: UpgradeTier[] = [
+  {
+    minStage: 'movement', cost: 50,
+    options: [
+      { id: 'house_church', name: 'House Church', emoji: '🏠', description: 'A living room becomes holy ground.', aweBonus: 5 },
+      { id: 'garden_shrine', name: 'Garden Shrine', emoji: '⛩️', description: 'Sacred space under open sky.', aweBonus: 5 },
+      { id: 'rented_hall', name: 'Rented Hall', emoji: '🏫', description: 'Folding chairs and fluorescent light.', aweBonus: 5 },
+    ],
+  },
+  {
+    minStage: 'sect', cost: 300,
+    options: [
+      { id: 'chapel', name: 'Chapel', emoji: '🛖', description: 'A proper house of worship.', aweBonus: 10 },
+      { id: 'commune', name: 'Commune', emoji: '🏘️', description: 'Live together, pray together.', aweBonus: 10 },
+      { id: 'storefront', name: 'Storefront Temple', emoji: '🏪', description: 'Between the laundromat and the deli.', aweBonus: 10 },
+    ],
+  },
+  {
+    minStage: 'congregation', cost: 1500,
+    options: [
+      { id: 'cathedral', name: 'Cathedral', emoji: '⛪', description: 'Stone and stained glass.', aweBonus: 20 },
+      { id: 'campus', name: 'Campus', emoji: '🏛️', description: 'A compound for the faithful.', aweBonus: 20 },
+      { id: 'broadcast_studio', name: 'Broadcasting Studio', emoji: '📡', description: 'The signal reaches millions.', aweBonus: 20 },
+    ],
+  },
+  {
+    minStage: 'megachurch', cost: 5000,
+    options: [
+      { id: 'tabernacle', name: 'Tabernacle', emoji: '🏟️', description: 'A stadium for the spirit.', aweBonus: 40 },
+      { id: 'holy_city', name: 'Holy City', emoji: '🌆', description: 'An entire district, consecrated.', aweBonus: 40 },
+      { id: 'digital_kingdom', name: 'Digital Kingdom', emoji: '🌐', description: 'The cloud is the new cathedral.', aweBonus: 40 },
+    ],
+  },
 ];
+
+// Flat list of all option IDs for lookup
+const ALL_OPTIONS = UPGRADE_TIERS.flatMap(t => t.options);
 
 const SPECIALTY_COLORS: Record<string, string> = {
   resources: 'bg-yellow-400',
@@ -23,19 +68,27 @@ export const HubView: React.FC = () => {
   const { state, dispatch } = useGame();
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
 
+  // Find the highest-tier building the player owns
+  const getOwnedBuilding = () => {
+    for (let i = UPGRADE_TIERS.length - 1; i >= 0; i--) {
+      const owned = UPGRADE_TIERS[i].options.find(o => state.buildings.includes(o.id));
+      if (owned) return { tier: i, option: owned };
+    }
+    return null;
+  };
+
   const getBuildingIcon = () => {
     if (state.stage === 'cult') return '🏰';
-    if (state.buildings.includes('megacomplex')) return '🏟️';
-    if (state.buildings.includes('cathedral')) return '⛪';
-    if (state.buildings.includes('chapel')) return '🛖';
-    if (state.buildings.includes('basement')) return '🏠';
+    const owned = getOwnedBuilding();
+    if (owned) return owned.option.emoji;
     return '⛺';
   };
 
   const getBackgroundGradient = () => {
     if (state.stage === 'cult') return 'from-slate-950 via-slate-900 to-black';
-    if (state.buildings.includes('megacomplex')) return 'from-indigo-900/40 to-slate-950';
-    if (state.buildings.includes('cathedral')) return 'from-amber-900/30 to-slate-950';
+    const owned = getOwnedBuilding();
+    if (owned && owned.tier >= 3) return 'from-indigo-900/40 to-slate-950';
+    if (owned && owned.tier >= 2) return 'from-amber-900/30 to-slate-950';
     return 'from-slate-900 to-slate-950';
   };
 
@@ -86,7 +139,8 @@ export const HubView: React.FC = () => {
       <OracleGuide />
 
       {/* Main Building Visualization */}
-      <div className="relative w-32 h-32 flex items-center justify-center shrink-0 mt-4">
+      <div className="flex-1" />
+      <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
 
         {/* Orbiting Flock */}
         {flockDots.map((dot) => (
@@ -137,17 +191,20 @@ export const HubView: React.FC = () => {
           </motion.span>
         </motion.div>
       </div>
+      <div className="flex-1" />
 
-      {/* Material Culture — single next-upgrade button */}
+      {/* Material Culture — upgrade picker */}
       {(() => {
-        const nextUpgrade = UPGRADES.find(u => {
-          if (state.buildings.includes(u.id)) return false;
+        // Find the next tier where the player hasn't bought any option
+        const nextTier = UPGRADE_TIERS.find(tier => {
+          const tierOwned = tier.options.some(o => state.buildings.includes(o.id));
+          if (tierOwned) return false;
           const stageIdx = STAGE_ORDER.indexOf(state.stage);
-          const reqIdx = STAGE_ORDER.indexOf(u.minStage);
+          const reqIdx = STAGE_ORDER.indexOf(tier.minStage);
           return stageIdx >= reqIdx;
         });
-        if (!nextUpgrade) return null;
-        const canAfford = state.resources >= nextUpgrade.cost;
+        if (!nextTier) return null;
+        const canAfford = state.resources >= nextTier.cost;
         return (
           <div className="mt-6 w-full px-2">
             <button
@@ -160,13 +217,13 @@ export const HubView: React.FC = () => {
               }`}
             >
               <div className="flex items-center gap-2">
-                <div className="text-amber-400">{nextUpgrade.icon}</div>
-                <div className="text-xs font-bold text-slate-200">Upgrade to {nextUpgrade.name}</div>
-                <div className="ml-auto text-[10px] font-mono text-amber-500/80">{nextUpgrade.cost} res</div>
+                <div className="text-amber-400 text-sm">{nextTier.options[0].emoji}</div>
+                <div className="text-xs font-bold text-slate-200">Choose a Building</div>
+                <div className="ml-auto text-[10px] font-mono text-amber-500/80">{nextTier.cost} res</div>
               </div>
             </button>
 
-            {/* Upgrade confirmation overlay */}
+            {/* Upgrade picker overlay */}
             <AnimatePresence>
               {showUpgradeConfirm && (
                 <motion.div
@@ -180,31 +237,38 @@ export const HubView: React.FC = () => {
                     initial={{ scale: 0.9, y: 10 }}
                     animate={{ scale: 1, y: 0 }}
                     exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 max-w-xs w-full text-center"
+                    className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 max-w-xs w-full"
                     onClick={e => e.stopPropagation()}
                   >
-                    <div className="text-amber-400 mb-2">{nextUpgrade.icon}</div>
-                    <h3 className="text-lg font-serif text-white mb-1">{nextUpgrade.name}</h3>
-                    <p className="text-xs text-slate-400 mb-3">+{nextUpgrade.aweBonus} Awe bonus</p>
-                    <p className="text-sm font-mono text-amber-500 mb-4">{nextUpgrade.cost} Resources</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowUpgradeConfirm(false)}
-                        className="flex-1 py-2 rounded-xl border border-slate-700 text-slate-400 text-xs font-bold"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        disabled={!canAfford}
-                        onClick={() => {
-                          dispatch({ type: 'PURCHASE_UPGRADE', ...nextUpgrade });
-                          setShowUpgradeConfirm(false);
-                        }}
-                        className="flex-1 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold disabled:opacity-30"
-                      >
-                        Confirm
-                      </button>
+                    <h3 className="text-lg font-serif text-white mb-1 text-center">Choose a Building</h3>
+                    <p className="text-[10px] text-slate-500 text-center mb-4">{nextTier.cost} Resources &bull; +{nextTier.options[0].aweBonus} Awe</p>
+                    <div className="space-y-2 mb-4">
+                      {nextTier.options.map(option => (
+                        <button
+                          key={option.id}
+                          disabled={!canAfford}
+                          onClick={() => {
+                            dispatch({ type: 'PURCHASE_UPGRADE', id: option.id, cost: nextTier.cost, aweBonus: option.aweBonus });
+                            setShowUpgradeConfirm(false);
+                          }}
+                          className="w-full p-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left transition-all hover:border-amber-500/50 hover:bg-slate-800 active:scale-95 disabled:opacity-30"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">{option.emoji}</span>
+                            <div>
+                              <div className="text-xs font-bold text-slate-200">{option.name}</div>
+                              <div className="text-[10px] text-slate-500">{option.description}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
+                    <button
+                      onClick={() => setShowUpgradeConfirm(false)}
+                      className="w-full py-2 rounded-xl border border-slate-700 text-slate-400 text-xs font-bold"
+                    >
+                      Cancel
+                    </button>
                   </motion.div>
                 </motion.div>
               )}
