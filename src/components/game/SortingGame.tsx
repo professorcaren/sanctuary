@@ -52,10 +52,10 @@ interface Law {
 }
 
 const LAWS: Law[] = [
-  { id: 'fast', title: 'The Great Fast', description: 'All Food and Drink is now Profane.', check: (i) => i.category === 'food' ? 'profane' : null },
-  { id: 'modernity', title: 'The Luddite Law', description: 'All Modern objects are Profane.', check: (i) => i.category === 'modern' ? 'profane' : null },
-  { id: 'celebration', title: 'The Feast', description: 'All Food is now Sacred.', check: (i) => i.category === 'food' ? 'sacred' : null },
-  { id: 'iconoclasm', title: 'Iconoclasm', description: 'Symbols are vanity. Icons are Profane.', check: (i) => i.category === 'icon' ? 'profane' : null },
+  { id: 'fast', title: 'The Great Fast', description: 'The body is a temple — stop feeding it. All Food is Profane.', check: (i) => i.category === 'food' ? 'profane' : null },
+  { id: 'modernity', title: 'The Luddite Law', description: 'If it has a plug, it has a demon. All Modern objects are Profane.', check: (i) => i.category === 'modern' ? 'profane' : null },
+  { id: 'celebration', title: 'The Feast', description: 'Every meal is communion now. All Food is Sacred.', check: (i) => i.category === 'food' ? 'sacred' : null },
+  { id: 'iconoclasm', title: 'Iconoclasm', description: 'Smash the idols — beauty is a trap. All Icons are Profane.', check: (i) => i.category === 'icon' ? 'profane' : null },
 ];
 
 const ITEMS_PER_SESSION = 10;
@@ -196,7 +196,7 @@ export const SortingGame: React.FC = () => {
 
             {activeLaws.length > 0 && (
               <div className="w-full max-w-sm mt-4 space-y-2">
-                <div className="text-[10px] text-amber-500 font-bold uppercase tracking-widest mb-2">Active Decrees</div>
+                <div className="text-[10px] text-amber-500 font-bold uppercase tracking-widest mb-2">Decrees</div>
                 {activeLaws.map(law => (
                   <div key={law.id} className="p-3 bg-amber-900/20 border border-amber-500/30 rounded-xl text-left">
                     <div className="text-xs font-bold text-amber-200">{law.title}</div>
