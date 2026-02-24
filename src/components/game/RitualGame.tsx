@@ -57,7 +57,7 @@ export const RitualGame: React.FC = () => {
   const [lastResult, setLastResult] = useState<boolean>(false);
 
   const isSacred = state.meters.awe > 80;
-  const isExhausted = state.lastRitualId === selectedOption?.id && state.ritualRepetitionCount > 2;
+  const isExhausted = selectedOption ? (state.ritualCounts[selectedOption.id] || 0) > 2 : false;
 
   const particles = useMemo(() =>
     Array.from({ length: 20 }, (_, i) => ({

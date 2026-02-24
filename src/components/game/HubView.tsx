@@ -205,7 +205,7 @@ const UpgradeButton: React.FC = () => {
       break;
     case 'congregation':
       cost = 2000;
-      requirement = { meter: 'legitimacy', value: 90 };
+      requirement = { meter: 'legitimacy', value: 75 };
       nextStage = 'megachurch';
       break;
     default:

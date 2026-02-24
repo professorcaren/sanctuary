@@ -21,14 +21,26 @@ const MYSTIC_ITEMS = ['Relics', 'Incense Burners', 'Visions Crystals', 'Sacred M
 const ACTIONS = ['Purchase', 'Commission', 'Repair', 'Consecrate', 'Import'];
 const REASONS = ['to impress the visitors', 'for the coming festival', 'to appease the elders', 'as a sign of devotion', 'to replace the old ones'];
 
+const recentDocTitles: string[] = [];
+
 const generateDocument = (stage: string, archetype: string): Document => {
   let pool = ITEMS;
   if (archetype === 'scholar') pool = SCHOLAR_ITEMS;
   else if (archetype === 'mystic') pool = MYSTIC_ITEMS;
 
-  const item = pool[Math.floor(Math.random() * pool.length)];
-  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-  const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+  // Pick components, rerolling up to 3 times to avoid recent title repeats
+  let item = '', adj = '', action = '';
+  let title = '';
+  for (let attempt = 0; attempt < 4; attempt++) {
+    item = pool[Math.floor(Math.random() * pool.length)];
+    adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+    action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+    title = `${action} ${adj} ${item}`;
+    if (!recentDocTitles.includes(title)) break;
+  }
+  recentDocTitles.push(title);
+  if (recentDocTitles.length > 3) recentDocTitles.shift();
+
   const reason = REASONS[Math.floor(Math.random() * REASONS.length)];
   
   const isLarge = Math.random() > 0.7;
@@ -36,17 +48,17 @@ const generateDocument = (stage: string, archetype: string): Document => {
   
   return {
     id: Math.random().toString(36).substr(2, 9),
-    title: `${action} ${adj} ${item}`,
+    title,
     body: `The ${stage === 'megachurch' ? 'Board' : 'Elders'} suggest we ${action.toLowerCase()} new ${adj.toLowerCase()} ${item.toLowerCase()} ${reason}.`,
     cost: cost,
     effects: {
-      approve: { 
-        text: 'It shall be done.', 
-        changes: { awe: Math.floor(cost / 20), resources: -cost } 
+      approve: {
+        text: 'It shall be done.',
+        changes: { awe: Math.floor(cost / 20), resources: -cost, legitimacy: 5 }
       },
-      deny: { 
-        text: 'We must be frugal.', 
-        changes: { resources: 0, awe: -2, cohesion: 1 } 
+      deny: {
+        text: 'We must be frugal.',
+        changes: { resources: 0, awe: -2, cohesion: 1, legitimacy: 2 }
       }
     }
   };

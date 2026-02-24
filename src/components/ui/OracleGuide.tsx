@@ -17,7 +17,7 @@ export const OracleGuide: React.FC = () => {
       case 'movement': cost = 100; req = { meter: 'awe', value: 60 }; next = 'the next stage'; break;
       case 'cult': cost = 500; req = { meter: 'cohesion', value: 80 }; next = 'Congregation'; break;
       case 'sect': cost = 500; req = { meter: 'cohesion', value: 80 }; next = 'Congregation'; break;
-      case 'congregation': cost = 2000; req = { meter: 'legitimacy', value: 90 }; next = 'Megachurch'; break;
+      case 'congregation': cost = 2000; req = { meter: 'legitimacy', value: 75 }; next = 'Megachurch'; break;
       default: return "You have reached the final manifestation.";
     }
 

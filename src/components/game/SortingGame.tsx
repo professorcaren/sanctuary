@@ -149,9 +149,9 @@ export const SortingGame: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            className="w-full h-full flex flex-col items-center justify-center p-4 z-10"
+            className="w-full h-full flex flex-col items-center justify-start pt-8 p-4 z-10 overflow-y-auto"
           >
-            <div className="text-center mb-6">
+            <div className="text-center mb-4">
               <h2 className="text-3xl font-serif text-amber-100">Sacred Sorting</h2>
               <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Maintain the boundary</p>
             </div>
@@ -164,7 +164,7 @@ export const SortingGame: React.FC = () => {
                     key={option.id}
                     onClick={() => unlocked && handleModeSelect(option.mode)}
                     disabled={!unlocked}
-                    className={`w-full p-4 rounded-2xl text-left transition-all group relative overflow-hidden ${
+                    className={`w-full p-3 rounded-2xl text-left transition-all group relative overflow-hidden ${
                       unlocked
                         ? 'bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-amber-500/50 hover:bg-slate-800'
                         : 'bg-slate-900/20 border border-slate-800/40 opacity-50 cursor-not-allowed'
@@ -190,7 +190,7 @@ export const SortingGame: React.FC = () => {
             </div>
 
             {activeLaws.length > 0 && (
-              <div className="w-full max-w-sm mt-6 space-y-2">
+              <div className="w-full max-w-sm mt-4 space-y-2">
                 <div className="text-[10px] text-amber-500 font-bold uppercase tracking-widest mb-2">Active Decrees</div>
                 {activeLaws.map(law => (
                   <div key={law.id} className="p-3 bg-amber-900/20 border border-amber-500/30 rounded-xl text-left">
@@ -294,10 +294,15 @@ const ClassifyGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }
       return true;
     });
 
-    const sessionCards = Array.from({ length: ITEMS_PER_SESSION }, () => {
-      const base = filtered[Math.floor(Math.random() * filtered.length)];
-      return { ...base, id: Math.random().toString(), isCursed: Math.random() < 0.15 };
-    });
+    // Shuffle and slice to avoid duplicates within a session
+    const shuffled = [...filtered];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const sessionCards = shuffled.slice(0, ITEMS_PER_SESSION).map(base => ({
+      ...base, id: Math.random().toString(), isCursed: Math.random() < 0.15
+    }));
 
     setCards(sessionCards);
     setCombo(0);
@@ -495,6 +500,7 @@ const BoundaryGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }
   const lastTimeRef = useRef<number | null>(null);
   const lastSpawnRef = useRef(0);
   const gameActiveRef = useRef(true);
+  const recentSpawnIds = useRef<string[]>([]);
 
   const filteredItems = useRef(
     ALL_ITEMS.filter(item => {
@@ -509,7 +515,14 @@ const BoundaryGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }
     const activeCount = driftingRef.current.filter(d => !d.isResolved).length;
     if (activeCount >= config.maxSimultaneous) return;
 
-    const base = filteredItems.current[Math.floor(Math.random() * filteredItems.current.length)];
+    // Pick a base item, rerolling up to 3 times to avoid recent repeats
+    let base = filteredItems.current[Math.floor(Math.random() * filteredItems.current.length)];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (!recentSpawnIds.current.includes(base.id)) break;
+      base = filteredItems.current[Math.floor(Math.random() * filteredItems.current.length)];
+    }
+    recentSpawnIds.current = [...recentSpawnIds.current.slice(-2), base.id];
+
     const angle = Math.random() * Math.PI * 2;
     const resolvedType = getItemType(base, activeLaws, stage);
 
@@ -574,6 +587,7 @@ const BoundaryGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }
           setScore(scoreRef.current);
           dispatch({ type: 'UPDATE_METER', meter: 'purity', value: 2 });
           dispatch({ type: 'UPDATE_METER', meter: 'awe', value: 2 });
+          dispatch({ type: 'UPDATE_METER', meter: 'legitimacy', value: 1 });
           setSanctuaryFlash('correct');
           setTimeout(() => setSanctuaryFlash(null), 300);
         } else {
@@ -613,6 +627,7 @@ const BoundaryGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }
       scoreRef.current += 1;
       setScore(scoreRef.current);
       dispatch({ type: 'UPDATE_METER', meter: 'purity', value: 3 });
+      dispatch({ type: 'UPDATE_METER', meter: 'legitimacy', value: 1 });
       dispatch({ type: 'UNLOCK_THEORY', id: 'purity_danger' });
       driftingRef.current[idx] = { ...d, isResolved: true, resultFlash: 'correct' };
     } else {
@@ -747,25 +762,35 @@ const ConsecrateGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage
 
   // Generate cards
   useEffect(() => {
-    const liminalItems = ALL_ITEMS.filter(i => i.type === 'liminal');
-    const nonLiminalItems = ALL_ITEMS.filter(i => i.type !== 'liminal');
+    const liminalItems = [...ALL_ITEMS.filter(i => i.type === 'liminal')];
+    const nonLiminalItems = [...ALL_ITEMS.filter(i => i.type !== 'liminal')];
+
+    // Shuffle each pool to avoid duplicates
+    for (let i = liminalItems.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [liminalItems[i], liminalItems[j]] = [liminalItems[j], liminalItems[i]];
+    }
+    for (let i = nonLiminalItems.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [nonLiminalItems[i], nonLiminalItems[j]] = [nonLiminalItems[j], nonLiminalItems[i]];
+    }
 
     const sessionCards: ConsecrateItem[] = [];
 
-    // Add liminal items
+    // Add liminal items (no repeats up to pool size)
     for (let i = 0; i < config.liminalCount; i++) {
-      const base = liminalItems[Math.floor(Math.random() * liminalItems.length)];
+      const base = liminalItems[i % liminalItems.length];
       sessionCards.push({ ...base, id: Math.random().toString(), forcedType: 'liminal' });
     }
 
-    // Add non-liminal items
+    // Add non-liminal items (no repeats up to pool size)
     const remaining = ITEMS_PER_SESSION - config.liminalCount;
     for (let i = 0; i < remaining; i++) {
-      const base = nonLiminalItems[Math.floor(Math.random() * nonLiminalItems.length)];
+      const base = nonLiminalItems[i % nonLiminalItems.length];
       sessionCards.push({ ...base, id: Math.random().toString(), forcedType: base.type as 'sacred' | 'profane' });
     }
 
-    // Shuffle
+    // Shuffle combined deck
     for (let i = sessionCards.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [sessionCards[i], sessionCards[j]] = [sessionCards[j], sessionCards[i]];

@@ -47,9 +47,8 @@ export interface GameState {
   unlockedFeatures: string[];
   congregationSize: number;
   disciples: Disciple[];
-  lastRitualTime: number;
   lastRitualId: string | null;
-  ritualRepetitionCount: number;
+  ritualCounts: Record<string, number>;
   activeEvent: GameEvent | null;
   activePrompt: LearningPrompt | null;
   seenPrompts: string[];

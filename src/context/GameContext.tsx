@@ -66,9 +66,8 @@ const INITIAL_STATE: GameState = {
   resources: 100,
   unlockedFeatures: ['sorting', 'ritual'],
   congregationSize: 5,
-  lastRitualTime: 0,
   lastRitualId: null,
-  ritualRepetitionCount: 0,
+  ritualCounts: {},
   activeEvent: null,
   activePrompt: null,
   seenPrompts: [],
@@ -252,6 +251,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         stage: action.stage,
         congregationSize: state.congregationSize + 10,
         seenEvents: [], // Clear history on stage advance
+        ritualCounts: {}, // Reset ritual exhaustion on stage advance
       };
     case 'TRIGGER_EVENT':
       return { 
@@ -357,25 +357,26 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         activeEvent: null,
       };
     case 'COMPLETE_RITUAL': {
-      const isRepeat = state.lastRitualId === action.ritualId;
-      const count = isRepeat ? state.ritualRepetitionCount + 1 : 1;
+      const newRitualCounts = { ...state.ritualCounts };
+      newRitualCounts[action.ritualId] = (newRitualCounts[action.ritualId] || 0) + 1;
+      const count = newRitualCounts[action.ritualId];
       const multiplier = count > 2 ? 1 / (1 + (count - 2) * 0.5) : 1;
 
       const meterBonus = action.bonus * multiplier;
       const sharedAweBonus = 5 * multiplier;
 
       const newMeters = { ...state.meters };
-      
+
       // Apply the specific ritual bonus
       newMeters[action.meter] = Math.min(100, Math.max(0, newMeters[action.meter] + meterBonus));
-      
+
       // Apply the shared awe bonus (stacking if the ritual was already awe-based)
       newMeters.awe = Math.min(100, Math.max(0, newMeters.awe + sharedAweBonus));
 
       return {
         ...state,
         lastRitualId: action.ritualId,
-        ritualRepetitionCount: count,
+        ritualCounts: newRitualCounts,
         meters: newMeters
       };
     }
@@ -476,9 +477,9 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       
       state.disciples.forEach(d => {
         if (d.role === 'acolyte' || d.role === 'elder') {
-           if (d.specialty === 'resources') discipleResources += (d.role === 'elder' ? 5 : 2);
-           if (d.specialty === 'awe') discipleAwe += (d.role === 'elder' ? 0.5 : 0.1);
-           if (d.specialty === 'purity') disciplePurity += (d.role === 'elder' ? 0.5 : 0.1);
+           if (d.specialty === 'resources') discipleResources += (d.role === 'elder' ? 10 : 5);
+           if (d.specialty === 'awe') discipleAwe += (d.role === 'elder' ? 1.0 : 0.3);
+           if (d.specialty === 'purity') disciplePurity += (d.role === 'elder' ? 1.0 : 0.3);
         }
       });
 
@@ -498,7 +499,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       let legitimacyDecay = 0;
 
       if (state.stage === 'cult') {
-        cultLegitimacyDecay = 0.5; // Rapid decay
+        cultLegitimacyDecay = 0.25; // Punishing but survivable
         cultAweBonus = 0.3;        // Intense focus
         cultCohesionBonus = 0.2;   // Total institution effect
       }
@@ -508,6 +509,10 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       if (state.stage === 'megachurch') legitimacyDecay = 0.3;
 
       const buildingBonus = state.buildings.length * 0.05;
+
+      // Building upkeep — resource sink that scales with stage
+      const stageUpkeepCost = state.stage === 'movement' ? 0 : (state.stage === 'sect' || state.stage === 'cult') ? 1 : state.stage === 'congregation' ? 3 : 5;
+      const buildingUpkeep = state.buildings.length * stageUpkeepCost;
 
       let growthChance = state.meters.cohesion / 1000;
       if (state.stage === 'cult') growthChance *= 0.2; // Stagnant growth
@@ -579,7 +584,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       return {
         ...state,
         isOracleActive: nextOracle || state.isOracleActive,
-        resources: state.resources + passiveIncome + discipleResources,
+        resources: Math.max(0, state.resources + passiveIncome + discipleResources - buildingUpkeep),
         congregationSize: state.congregationSize + newMember,
         activeEvent: nextEvent,
         seenEvents: newSeenEvents,
