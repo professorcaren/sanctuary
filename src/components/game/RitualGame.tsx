@@ -83,7 +83,7 @@ export const RitualGame: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center bg-slate-950 relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center bg-slate-950 relative overflow-y-auto">
       {/* Sacred Sorting Style Background */}
       <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-slate-950 to-black" />
       
@@ -96,17 +96,17 @@ export const RitualGame: React.FC = () => {
             exit={{ opacity: 0, scale: 1.05 }}
             className="w-full h-full flex flex-col items-center justify-center p-4 z-10"
           >
-            <div className="text-center mb-10">
+            <div className="text-center mb-6">
               <h2 className="text-3xl font-serif text-amber-100">Sacred Ritual</h2>
               <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Invoke the divine</p>
             </div>
 
-            <div className="w-full space-y-4 max-w-sm">
+            <div className="w-full space-y-3 max-w-sm">
               {RITUAL_OPTIONS.map((option) => (
                 <button
                   key={option.id}
                   onClick={() => { setSelectedOption(option); setPhase('action'); }}
-                  className="w-full p-5 bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl text-left hover:border-amber-500/50 hover:bg-slate-800 transition-all group relative overflow-hidden"
+                  className="w-full p-4 bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl text-left hover:border-amber-500/50 hover:bg-slate-800 transition-all group relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   <div className="flex items-center gap-4 mb-2 relative z-10">

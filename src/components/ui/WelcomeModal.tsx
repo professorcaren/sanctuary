@@ -53,20 +53,20 @@ export const WelcomeModal: React.FC = () => {
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="bg-slate-900 border border-amber-500/30 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center my-auto"
+          className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center my-auto"
         >
           {step === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/20">
-                <Sparkles size={32} className="text-amber-500" />
+              <div className="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
+                <Sparkles size={28} className="text-amber-500" />
               </div>
 
               <h2 className="text-3xl font-serif text-white mb-2">Welcome, Founder</h2>
-              <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
                 You have been chosen to lead a new spiritual movement. Your goal is to grow from a humble "Circle of Seekers" into a global institution.
               </p>
 
-              <div className="space-y-4 mb-8 text-left">
+              <div className="space-y-3 mb-6 text-left">
                  <div className="flex gap-3 items-start">
                     <Zap size={16} className="text-amber-400 shrink-0 mt-0.5" />
                     <div>
@@ -100,21 +100,21 @@ export const WelcomeModal: React.FC = () => {
           ) : (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                <h2 className="text-2xl font-serif text-white mb-1">Founder Background</h2>
-               <p className="text-xs text-slate-500 mb-6 uppercase tracking-widest">Select your origin story</p>
-               
-               <div className="space-y-3 mb-8">
+               <p className="text-xs text-slate-500 mb-4 uppercase tracking-widest">Tap to select your origin story</p>
+
+               <div className="space-y-2 mb-6">
                   {ARCHETYPES.map((arch) => (
                     <button
                       key={arch.id}
                       onClick={() => setSelectedArchetype(arch.id)}
-                      className={`w-full p-4 rounded-2xl border text-left transition-all ${
-                        selectedArchetype === arch.id 
-                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-100 shadow-glow-sm' 
-                          : 'bg-slate-800/50 border-slate-800 text-slate-500 hover:border-slate-700'
+                      className={`w-full p-3 rounded-2xl border text-left transition-all ${
+                        selectedArchetype === arch.id
+                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-100 shadow-glow-sm'
+                          : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-amber-500/30 hover:bg-slate-800'
                       }`}
                     >
                       <div className="flex items-center gap-3 mb-1">
-                        <div className={`${selectedArchetype === arch.id ? 'text-amber-400' : 'text-slate-600'}`}>
+                        <div className={`${selectedArchetype === arch.id ? 'text-amber-400' : 'text-slate-400'}`}>
                           {arch.icon}
                         </div>
                         <div className="text-xs font-bold uppercase tracking-wider">{arch.label}</div>
@@ -131,7 +131,7 @@ export const WelcomeModal: React.FC = () => {
                   dispatch({ type: 'RESET_GAME', traits: [], archetype: selectedArchetype });
                   dispatch({ type: 'DISMISS_WELCOME' });
                 }}
-                className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg disabled:opacity-50"
+                className="w-full py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 transition-colors shadow-lg disabled:opacity-30 disabled:bg-slate-700"
               >
                 Manifest the Sanctuary
               </button>
