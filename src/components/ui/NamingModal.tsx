@@ -48,7 +48,7 @@ export const NamingModal: React.FC = () => {
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter Sanctuary Name..."
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 text-white text-center font-bold focus:border-amber-500 focus:outline-none transition-all"
-              maxLength={24}
+              maxLength={32}
             />
 
             <button

@@ -49,7 +49,12 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
           resources: parseInt(cols[4]) || 0
         };
       }).filter(e => e.name !== 'Unnamed')
-        .sort((a, b) => b.resources - a.resources);
+        .sort((a, b) => {
+          const stageOrder = ['movement', 'cult', 'sect', 'denomination', 'megachurch'];
+          const stageDiff = stageOrder.indexOf(b.stage.toLowerCase()) - stageOrder.indexOf(a.stage.toLowerCase());
+          if (stageDiff !== 0) return stageDiff;
+          return b.members - a.members;
+        });
 
       setEntries(parsed);
     } catch (err) {
@@ -105,11 +110,11 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <h3 className="font-bold text-slate-200">{entry.name}</h3>
-                    <span className="text-[10px] font-mono text-amber-500">${entry.resources}</span>
+                    <span className="text-[10px] font-mono text-amber-500">{entry.members} members</span>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-slate-500 uppercase tracking-wider mt-1">
                      <div className="flex items-center gap-1"><Landmark size={10}/> {entry.stage}</div>
-                     <div className="flex items-center gap-1"><Users size={10}/> {entry.members}</div>
+                     <div className="flex items-center gap-1">$ {entry.resources}</div>
                   </div>
                 </div>
               </motion.div>
