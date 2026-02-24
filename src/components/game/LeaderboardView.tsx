@@ -29,7 +29,7 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
       if (SHEET_CSV_URL.includes('Zlh_Zlh')) {
          setEntries([
            { name: 'The Silent Order', stage: 'Megachurch', members: 1200, resources: 50000 },
-           { name: "Durkheim's Dream", stage: 'Denomination', members: 450, resources: 12000 },
+           { name: "Durkheim's Dream", stage: 'Congregation', members: 450, resources: 12000 },
            { name: "Weber's Bureaucracy", stage: 'Sect', members: 85, resources: 2100 },
          ]);
          setLoading(false);
@@ -50,7 +50,7 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
         };
       }).filter(e => e.name !== 'Unnamed')
         .sort((a, b) => {
-          const stageOrder = ['movement', 'cult', 'sect', 'denomination', 'megachurch'];
+          const stageOrder = ['movement', 'cult', 'sect', 'congregation', 'megachurch'];
           const stageDiff = stageOrder.indexOf(b.stage.toLowerCase()) - stageOrder.indexOf(a.stage.toLowerCase());
           if (stageDiff !== 0) return stageDiff;
           return b.members - a.members;

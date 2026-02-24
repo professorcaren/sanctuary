@@ -68,10 +68,10 @@ interface SortingOption {
   mode: SortingMode;
   effect: string;
   icon: React.ReactNode;
-  minStage: 'movement' | 'sect' | 'denomination';
+  minStage: 'movement' | 'sect' | 'congregation';
 }
 
-const STAGE_ORDER = ['movement', 'cult', 'sect', 'denomination', 'megachurch'] as const;
+const STAGE_ORDER = ['movement', 'cult', 'sect', 'congregation', 'megachurch'] as const;
 
 function stageAtLeast(current: string, required: string): boolean {
   return STAGE_ORDER.indexOf(current as typeof STAGE_ORDER[number]) >= STAGE_ORDER.indexOf(required as typeof STAGE_ORDER[number]);
@@ -80,7 +80,7 @@ function stageAtLeast(current: string, required: string): boolean {
 const SORTING_OPTIONS: SortingOption[] = [
   { id: 'classify', name: 'Classification', mode: 'classify', effect: 'Maintains Purity', icon: <Sparkles size={20} />, minStage: 'movement' },
   { id: 'boundary', name: 'Boundary Maintenance', mode: 'boundary', effect: 'Defends Purity', icon: <Shield size={20} />, minStage: 'sect' },
-  { id: 'consecrate', name: 'Consecration', mode: 'consecrate', effect: 'Transforms the Liminal', icon: <Flame size={20} />, minStage: 'denomination' },
+  { id: 'consecrate', name: 'Consecration', mode: 'consecrate', effect: 'Transforms the Liminal', icon: <Flame size={20} />, minStage: 'congregation' },
 ];
 
 function stageName(s: string): string {
@@ -470,7 +470,7 @@ interface DriftingItem {
 const BOUNDARY_CONFIG: Record<string, { speed: number; maxSimultaneous: number; spawnInterval: number; totalItems: number }> = {
   sect:         { speed: 35, maxSimultaneous: 2, spawnInterval: 2500, totalItems: 12 },
   cult:         { speed: 35, maxSimultaneous: 2, spawnInterval: 2500, totalItems: 12 },
-  denomination: { speed: 50, maxSimultaneous: 3, spawnInterval: 2000, totalItems: 15 },
+  congregation: { speed: 50, maxSimultaneous: 3, spawnInterval: 2000, totalItems: 15 },
   megachurch:   { speed: 65, maxSimultaneous: 4, spawnInterval: 1500, totalItems: 15 },
 };
 
@@ -726,13 +726,13 @@ interface ConsecrateItem extends Item {
 }
 
 const CONSECRATE_CONFIG: Record<string, { tapsRequired: number; timeLimit: number; liminalCount: number }> = {
-  denomination: { tapsRequired: 8, timeLimit: 5, liminalCount: 5 },
+  congregation: { tapsRequired: 8, timeLimit: 5, liminalCount: 5 },
   megachurch:   { tapsRequired: 12, timeLimit: 4, liminalCount: 6 },
 };
 
 const ConsecrateGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }) => {
   const { dispatch } = useGame();
-  const config = CONSECRATE_CONFIG[stage] || CONSECRATE_CONFIG.denomination;
+  const config = CONSECRATE_CONFIG[stage] || CONSECRATE_CONFIG.congregation;
 
   const [cards, setCards] = useState<ConsecrateItem[]>([]);
   const [consecrationProgress, setConsecrationProgress] = useState(0);

@@ -234,7 +234,7 @@ const RhythmGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
       case 'movement': return 0.25;
       case 'cult': return 0.15;
       case 'sect': return 0.15;
-      case 'denomination': return 0.10;
+      case 'congregation': return 0.10;
       case 'megachurch': return 0.05;
       default: return 0.15;
     }
@@ -348,7 +348,7 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
       case 'movement': return 3;
       case 'cult': return 4;
       case 'sect': return 4;
-      case 'denomination': return 5;
+      case 'congregation': return 5;
       case 'megachurch': return 5;
       default: return 4;
     }
@@ -455,7 +455,7 @@ const BreathGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolea
       case 'movement': return { totalBreaths: 4, drainRate: 0.3, recoverRate: 0.15 };
       case 'cult': return { totalBreaths: 5, drainRate: 0.5, recoverRate: 0.12 };
       case 'sect': return { totalBreaths: 5, drainRate: 0.5, recoverRate: 0.12 };
-      case 'denomination': return { totalBreaths: 6, drainRate: 0.7, recoverRate: 0.08 };
+      case 'congregation': return { totalBreaths: 6, drainRate: 0.7, recoverRate: 0.08 };
       case 'megachurch': return { totalBreaths: 7, drainRate: 0.9, recoverRate: 0.05 };
       default: return { totalBreaths: 5, drainRate: 0.5, recoverRate: 0.12 };
     }

@@ -99,7 +99,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
               icon="📚" 
             />
             
-            {(state.stage === 'denomination' || state.stage === 'megachurch') && (
+            {(state.stage === 'congregation' || state.stage === 'megachurch') && (
               <NavButton 
                 active={activeTab === 'bureaucracy'} 
                 onClick={() => onTabChange('bureaucracy')} 

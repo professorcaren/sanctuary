@@ -7,7 +7,7 @@ import { OracleGuide } from '../ui/OracleGuide';
 const UPGRADES = [
   { id: 'basement', name: 'Basement', icon: <Home size={14} />, cost: 50, aweBonus: 5, minStage: 'movement' },
   { id: 'chapel', name: 'Chapel', icon: <Landmark size={14} />, cost: 300, aweBonus: 10, minStage: 'sect' },
-  { id: 'cathedral', name: 'Cathedral', icon: <Church size={14} />, cost: 1500, aweBonus: 20, minStage: 'denomination' },
+  { id: 'cathedral', name: 'Cathedral', icon: <Church size={14} />, cost: 1500, aweBonus: 20, minStage: 'congregation' },
   { id: 'megacomplex', name: 'Tabernacle', icon: <Building2 size={14} />, cost: 5000, aweBonus: 40, minStage: 'megachurch' },
 ];
 
@@ -196,14 +196,14 @@ const UpgradeButton: React.FC = () => {
     case 'cult':
       cost = 500;
       requirement = { meter: 'cohesion', value: 80 };
-      nextStage = 'denomination';
+      nextStage = 'congregation';
       break;
     case 'sect':
       cost = 500;
       requirement = { meter: 'cohesion', value: 80 };
-      nextStage = 'denomination';
+      nextStage = 'congregation';
       break;
-    case 'denomination':
+    case 'congregation':
       cost = 2000;
       requirement = { meter: 'legitimacy', value: 90 };
       nextStage = 'megachurch';

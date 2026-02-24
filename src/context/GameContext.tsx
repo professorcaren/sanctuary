@@ -35,14 +35,14 @@ const THEORY_ARCHIVE: Record<string, ArchiveEntry> = {
     title: 'Routinization of Charisma',
     concept: 'Max Weber',
     theory: 'Charismatic authority must be transformed into legal or traditional authority to survive the leader\'s death.',
-    description: 'The transition from a "Cult" to a "Denomination" requires rules, bureaucracy, and predictable rituals.'
+    description: 'The transition from a "Cult" to a "Congregation" requires rules, bureaucracy, and predictable rituals.'
   },
   'church_sect': {
     id: 'church_sect',
     title: 'Church-Sect Typology',
     concept: 'Max Weber & Ernst Troeltsch',
     theory: 'Religious groups exist on a spectrum of tension with the surrounding society.',
-    description: 'A "Sect" maintains high tension and strict boundaries, while a "Church" (or Denomination) seeks social integration and low tension.'
+    description: 'A "Sect" maintains high tension and strict boundaries, while a "Church" (or Congregation) seeks social integration and low tension.'
   },
   'consecration': {
     id: 'consecration',
@@ -173,7 +173,7 @@ const EVENTS: Record<string, GameEvent[]> = {
       ]
     }
   ],
-  'denomination': [
+  'congregation': [
     {
       id: 'secular_tension',
       title: 'The World Calls',
@@ -483,7 +483,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       });
 
       // Secularization Challenge — scales with stage
-      const stageMultiplier = state.stage === 'movement' ? 1 : state.stage === 'sect' ? 1.5 : state.stage === 'cult' ? 1.8 : state.stage === 'denomination' ? 2.2 : 3;
+      const stageMultiplier = state.stage === 'movement' ? 1 : state.stage === 'sect' ? 1.5 : state.stage === 'cult' ? 1.8 : state.stage === 'congregation' ? 2.2 : 3;
       let secularDecay = (0.15 + (state.meters.legitimacy / 300)) * stageMultiplier;
 
       // Purity decay — larger congregations are harder to keep pure
@@ -504,7 +504,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       }
 
       // Public scrutiny in later stages
-      if (state.stage === 'denomination') legitimacyDecay = 0.15;
+      if (state.stage === 'congregation') legitimacyDecay = 0.15;
       if (state.stage === 'megachurch') legitimacyDecay = 0.3;
 
       const buildingBonus = state.buildings.length * 0.05;

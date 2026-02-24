@@ -36,7 +36,7 @@ export interface Disciple {
   doctrine: Record<string, string>; 
 }
 
-export type StageType = 'movement' | 'cult' | 'sect' | 'denomination' | 'megachurch';
+export type StageType = 'movement' | 'cult' | 'sect' | 'congregation' | 'megachurch';
 export type ArchetypeType = 'mystic' | 'scholar' | 'administrator' | 'charismatic';
 
 export interface GameState {
