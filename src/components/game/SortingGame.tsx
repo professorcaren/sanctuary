@@ -102,25 +102,30 @@ function getItemType(item: Item, activeLaws: Law[], stage: string): 'sacred' | '
 // --- Parent Orchestrator ---
 
 export const SortingGame: React.FC = () => {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
   const [phase, setPhase] = useState<'prep' | 'action' | 'result'>('prep');
   const [selectedMode, setSelectedMode] = useState<SortingMode | null>(null);
   const [activeLaws, setActiveLaws] = useState<Law[]>([]);
   const [sessionScore, setSessionScore] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(ITEMS_PER_SESSION);
 
-  // Generate laws in prep phase
+  // Generate laws once per playthrough, persist in game state
   useEffect(() => {
     if (phase === 'prep') {
-      const newLaws: Law[] = [];
-      if (Math.random() < 0.5) {
-        newLaws.push(LAWS[Math.floor(Math.random() * LAWS.length)]);
-        if (Math.random() < 0.3) {
-          const secondLaw = LAWS[Math.floor(Math.random() * LAWS.length)];
-          if (secondLaw.id !== newLaws[0].id) newLaws.push(secondLaw);
+      if (state.sortingLaws !== null) {
+        setActiveLaws(LAWS.filter(l => state.sortingLaws!.includes(l.id)));
+      } else {
+        const newLaws: Law[] = [];
+        if (Math.random() < 0.5) {
+          newLaws.push(LAWS[Math.floor(Math.random() * LAWS.length)]);
+          if (Math.random() < 0.3) {
+            const second = LAWS[Math.floor(Math.random() * LAWS.length)];
+            if (second.id !== newLaws[0].id) newLaws.push(second);
+          }
         }
+        setActiveLaws(newLaws);
+        dispatch({ type: 'SET_SORTING_LAWS', laws: newLaws.map(l => l.id) });
       }
-      setActiveLaws(newLaws);
     }
   }, [phase]);
 

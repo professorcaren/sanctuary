@@ -86,6 +86,7 @@ const INITIAL_STATE: GameState = {
   lastTrainingResult: null,
   globalDoctrine: {},
   bureaucracyGrandeurScore: 0,
+  sortingLaws: null,
 };
 
 type Action =
@@ -111,7 +112,8 @@ type Action =
   | { type: 'TRIGGER_ORACLE' }
   | { type: 'UPDATE_GRANDEUR'; value: number }
   | { type: 'SET_VIEW'; view: string }
-  | { type: 'SET_CHURCH_NAME'; name: string };
+  | { type: 'SET_CHURCH_NAME'; name: string }
+  | { type: 'SET_SORTING_LAWS'; laws: string[] };
 
 const EVENTS: Record<string, GameEvent[]> = {
   'movement': [
@@ -338,6 +340,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       return {
         ...state,
         churchName: action.name
+      };
+    case 'SET_SORTING_LAWS':
+      return {
+        ...state,
+        sortingLaws: action.laws
       };
     case 'SET_VIEW':
       return {

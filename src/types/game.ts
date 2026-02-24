@@ -66,6 +66,7 @@ export interface GameState {
   lastTrainingResult: 'consistent' | 'contradiction' | 'new' | null;
   globalDoctrine: Record<string, string>; // Church-wide consistent answers
   bureaucracyGrandeurScore: number;
+  sortingLaws: string[] | null;
 }
 
 export interface GameAction {

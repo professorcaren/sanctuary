@@ -17,9 +17,50 @@ import { NamingModal } from '../ui/NamingModal';
 import { StatsGlossaryModal } from '../ui/StatsGlossaryModal';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onTabChange }) => {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
   const [isStatsOpen, setIsStatsOpen] = React.useState(false);
   const isProfane = state.meters.awe < 20 && state.stage !== 'movement';
+
+  // Contextual learning hints — fire once at key moments
+  React.useEffect(() => {
+    if (state.isGameOver || state.activePrompt || state.activeEvent) return;
+
+    const show = (id: string, text: string) => {
+      if (state.seenPrompts.includes(id)) return false;
+      dispatch({ type: 'SHOW_PROMPT', prompt: { id, text, trigger: 'contextual' } });
+      return true;
+    };
+
+    // Meter warnings (highest priority)
+    if (state.meters.awe < 30 && state.stage !== 'movement') {
+      if (show('hint_awe_low', 'Awe is fading. Perform the Incense ritual or buy buildings to sustain it.')) return;
+    }
+    if (state.meters.purity < 30) {
+      if (show('hint_purity_low', 'Purity is dangerously low. Use Sacred Sorting to classify items and restore it.')) return;
+    }
+    if (state.resources < 20 && state.stage !== 'movement') {
+      if (show('hint_resources_low', 'Resources are running low. Grow your flock for passive income, or recruit resource-specialty disciples.')) return;
+    }
+
+    // Stage milestones
+    if (state.stage === 'sect') {
+      if (show('hint_sect_reached', "You've formed a Sect. Boundary Maintenance is now unlocked in Sorting — it also builds Legitimacy.")) return;
+    }
+    if (state.stage === 'cult') {
+      if (show('hint_cult_reached', 'The Cult path is perilous. Legitimacy decays rapidly — manage it carefully or face a state crackdown.')) return;
+    }
+    if (state.stage === 'congregation') {
+      if (show('hint_congregation_reached', 'Welcome to Congregation. The Admin tab is now available — approve or deny documents to build Legitimacy toward Megachurch.')) return;
+    }
+
+    // Mechanic hints
+    if (state.ritualCounts && Object.values(state.ritualCounts).some((c) => (c as number) > 2)) {
+      if (show('hint_ritual_exhaustion', 'Repeating the same ritual reduces its power. Try alternating between Chant, Meditate, and Incense for full effect.')) return;
+    }
+    if (state.disciples.length === 1) {
+      if (show('hint_first_disciple', "You've recruited your first disciple. Train them in the Teach tab — they provide no bonuses as novices, but become powerful when promoted.")) return;
+    }
+  }, [state.meters.awe, state.meters.purity, state.resources, state.stage, state.ritualCounts, state.disciples.length, state.activePrompt, state.activeEvent, state.isGameOver]);
 
   return (
     <div className={`min-h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden flex flex-col items-center transition-all duration-1000 ${isProfane ? 'grayscale sepia-[0.2] brightness-75' : ''}`}>
