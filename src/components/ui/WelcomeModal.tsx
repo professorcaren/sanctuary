@@ -61,7 +61,7 @@ export const WelcomeModal: React.FC = () => {
                 <Sparkles size={28} className="text-amber-500" />
               </div>
 
-              <h2 className="text-3xl font-serif text-white mb-2">Welcome, Founder</h2>
+              <h2 className="text-3xl font-serif text-white mb-2">Who are you?</h2>
               <p className="text-slate-400 text-sm mb-6 leading-relaxed">
                 You are founding a new religious movement. Guide it from a small circle of seekers through the stages of institutional development — sect, congregation, megachurch.
               </p>
@@ -94,13 +94,12 @@ export const WelcomeModal: React.FC = () => {
                 onClick={() => setStep(1)}
                 className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 transition-colors shadow-lg"
               >
-                Select Founder
+                Continue
               </button>
             </motion.div>
           ) : (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-               <h2 className="text-2xl font-serif text-white mb-1">Founder Background</h2>
-               <p className="text-xs text-slate-500 mb-4 uppercase tracking-widest">How did your movement begin?</p>
+               <h2 className="text-2xl font-serif text-white mb-4">How did your movement begin?</h2>
 
                <div className="space-y-2 mb-6">
                   {ARCHETYPES.map((arch) => (

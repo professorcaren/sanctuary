@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, Crown, Sparkles, Home, Landmark, Building2, Church } from 'lucide-react';
+import { Crown, Home, Landmark, Building2, Church } from 'lucide-react';
 import { OracleGuide } from '../ui/OracleGuide';
 
 const UPGRADES = [
@@ -17,8 +17,11 @@ const SPECIALTY_COLORS: Record<string, string> = {
   awe: 'bg-purple-400',
 };
 
+const STAGE_ORDER = ['movement', 'cult', 'sect', 'congregation', 'megachurch'];
+
 export const HubView: React.FC = () => {
   const { state, dispatch } = useGame();
+  const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
 
   const getBuildingIcon = () => {
     if (state.stage === 'cult') return '🏰';
@@ -135,112 +138,190 @@ export const HubView: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Material Religion */}
-      <div className="mt-8 w-full px-2">
-        <h2 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-          <Landmark size={10} /> Material Culture
-        </h2>
-        <div className="grid grid-cols-2 gap-2">
-          {UPGRADES.map(upgrade => {
-            const isOwned = state.buildings.includes(upgrade.id);
-            const canAfford = state.resources >= upgrade.cost;
-            const isUnlocked = state.stage === upgrade.minStage || state.buildings.length >= UPGRADES.findIndex(u => u.id === upgrade.id);
+      {/* Material Culture — single next-upgrade button */}
+      {(() => {
+        const nextUpgrade = UPGRADES.find(u => {
+          if (state.buildings.includes(u.id)) return false;
+          const stageIdx = STAGE_ORDER.indexOf(state.stage);
+          const reqIdx = STAGE_ORDER.indexOf(u.minStage);
+          return stageIdx >= reqIdx;
+        });
+        if (!nextUpgrade) return null;
+        const canAfford = state.resources >= nextUpgrade.cost;
+        return (
+          <div className="mt-6 w-full px-2">
+            <button
+              onClick={() => setShowUpgradeConfirm(true)}
+              disabled={!canAfford}
+              className={`w-full p-3 rounded-xl border text-left transition-all ${
+                canAfford
+                  ? 'bg-slate-900 border-amber-500/40 active:scale-95'
+                  : 'bg-slate-900 border-slate-800 opacity-50'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className="text-amber-400">{nextUpgrade.icon}</div>
+                <div className="text-xs font-bold text-slate-200">Upgrade to {nextUpgrade.name}</div>
+                <div className="ml-auto text-[10px] font-mono text-amber-500/80">{nextUpgrade.cost} res</div>
+              </div>
+            </button>
 
-            return (
-              <button
-                key={upgrade.id}
-                disabled={isOwned || !canAfford || !isUnlocked}
-                onClick={() => dispatch({ type: 'PURCHASE_UPGRADE', ...upgrade })}
-                className={`p-2 rounded-xl border text-left transition-all relative ${
-                  isOwned 
-                    ? 'bg-amber-500/10 border-amber-500/30 opacity-100' 
-                    : !isUnlocked ? 'opacity-10 grayscale border-slate-800'
-                    : 'bg-slate-900 border-slate-800 active:scale-95'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div className={`${isOwned ? 'text-amber-400' : 'text-slate-500'}`}>{upgrade.icon}</div>
-                  <div className={`text-[9px] font-bold ${isOwned ? 'text-amber-200' : 'text-slate-300'}`}>{upgrade.name}</div>
-                </div>
-                {!isOwned && <div className="text-[8px] font-mono text-amber-500/80 ml-5">{upgrade.cost}</div>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+            {/* Upgrade confirmation overlay */}
+            <AnimatePresence>
+              {showUpgradeConfirm && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6"
+                  onClick={() => setShowUpgradeConfirm(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, y: 10 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 max-w-xs w-full text-center"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="text-amber-400 mb-2">{nextUpgrade.icon}</div>
+                    <h3 className="text-lg font-serif text-white mb-1">{nextUpgrade.name}</h3>
+                    <p className="text-xs text-slate-400 mb-3">+{nextUpgrade.aweBonus} Awe bonus</p>
+                    <p className="text-sm font-mono text-amber-500 mb-4">{nextUpgrade.cost} Resources</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowUpgradeConfirm(false)}
+                        className="flex-1 py-2 rounded-xl border border-slate-700 text-slate-400 text-xs font-bold"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        disabled={!canAfford}
+                        onClick={() => {
+                          dispatch({ type: 'PURCHASE_UPGRADE', ...nextUpgrade });
+                          setShowUpgradeConfirm(false);
+                        }}
+                        className="flex-1 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold disabled:opacity-30"
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })()}
 
-      {/* Evolution Button */}
-      <div className="mt-auto mb-4 w-full flex justify-center">
-        <UpgradeButton />
-      </div>
+      {/* Evolution Modal */}
+      {(() => {
+        let evolveCost = 0;
+        let requirement = { meter: '' as string, value: 0 };
+        let nextStage = '' as string;
+        let canEvolve = false;
+
+        switch (state.stage) {
+          case 'movement': {
+            evolveCost = 100;
+            requirement = { meter: 'awe', value: 60 };
+            const highTensionDecisions = ['barred_gates', 'strict_purity', 'doubled_down'];
+            const isHighTension = highTensionDecisions.some(id => state.decisionHistory.includes(id));
+            nextStage = isHighTension ? 'cult' : 'sect';
+            break;
+          }
+          case 'cult':
+            evolveCost = 500;
+            requirement = { meter: 'cohesion', value: 80 };
+            nextStage = 'congregation';
+            break;
+          case 'sect':
+            evolveCost = 500;
+            requirement = { meter: 'cohesion', value: 80 };
+            nextStage = 'congregation';
+            break;
+          case 'congregation':
+            evolveCost = 2000;
+            requirement = { meter: 'legitimacy', value: 75 };
+            nextStage = 'megachurch';
+            break;
+          default:
+            return null;
+        }
+
+        canEvolve = state.resources >= evolveCost && state.meters[requirement.meter as keyof typeof state.meters] >= requirement.value;
+
+        return <EvolveWatcher canEvolve={canEvolve} nextStage={nextStage} cost={evolveCost} requirement={requirement} />;
+      })()}
     </div>
   );
 };
 
-const UpgradeButton: React.FC = () => {
+const EvolveWatcher: React.FC<{
+  canEvolve: boolean;
+  nextStage: string;
+  cost: number;
+  requirement: { meter: string; value: number };
+}> = ({ canEvolve, nextStage, cost, requirement }) => {
   const { state, dispatch } = useGame();
-  
-  let cost = 0;
-  let requirement = { meter: '' as any, value: 0 };
-  let nextStage = '' as any;
-  let canUpgrade = false;
+  const [showEvolve, setShowEvolve] = useState(false);
+  const prevCanEvolve = useRef(false);
 
-  switch (state.stage) {
-    case 'movement':
-      cost = 100;
-      requirement = { meter: 'awe', value: 60 };
-      const highTensionDecisions = ['barred_gates', 'strict_purity', 'doubled_down'];
-      const isHighTension = highTensionDecisions.some(id => state.decisionHistory.includes(id));
-      nextStage = isHighTension ? 'cult' : 'sect';
-      break;
-    case 'cult':
-      cost = 500;
-      requirement = { meter: 'cohesion', value: 80 };
-      nextStage = 'congregation';
-      break;
-    case 'sect':
-      cost = 500;
-      requirement = { meter: 'cohesion', value: 80 };
-      nextStage = 'congregation';
-      break;
-    case 'congregation':
-      cost = 2000;
-      requirement = { meter: 'legitimacy', value: 75 };
-      nextStage = 'megachurch';
-      break;
-    default:
-      return null;
-  }
-
-  canUpgrade = state.resources >= cost && state.meters[requirement.meter] >= requirement.value;
-
-  const handleUpgrade = () => {
-    if (canUpgrade) {
-      dispatch({ type: 'ADD_RESOURCE', amount: -cost });
-      dispatch({ type: 'ADVANCE_STAGE', stage: nextStage });
-      dispatch({ type: 'UPDATE_METER', meter: 'legitimacy', value: 10 });
-      dispatch({ type: 'UNLOCK_THEORY', id: state.stage === 'movement' ? 'church_sect' : 'routinization' });
-      dispatch({ type: 'TRIGGER_ORACLE' });
+  useEffect(() => {
+    if (canEvolve && !prevCanEvolve.current) {
+      setShowEvolve(true);
     }
+    prevCanEvolve.current = canEvolve;
+  }, [canEvolve]);
+
+  const handleEvolve = () => {
+    dispatch({ type: 'ADD_RESOURCE', amount: -cost });
+    dispatch({ type: 'ADVANCE_STAGE', stage: nextStage });
+    dispatch({ type: 'UPDATE_METER', meter: 'legitimacy', value: 10 });
+    dispatch({ type: 'UNLOCK_THEORY', id: state.stage === 'movement' ? 'church_sect' : 'routinization' });
+    dispatch({ type: 'TRIGGER_ORACLE' });
+    setShowEvolve(false);
   };
 
   return (
-    <button
-      onClick={handleUpgrade}
-      disabled={!canUpgrade}
-      className={`
-        w-full max-w-[240px] py-3 rounded-xl font-bold text-xs tracking-wide transition-all
-        ${canUpgrade 
-          ? 'bg-amber-500 text-slate-900 shadow-lg' 
-          : 'bg-slate-800 text-slate-500 border border-slate-700'}
-      `}
-    >
-      <div className="flex flex-col items-center">
-        <span>Evolve to {nextStage.toUpperCase()}</span>
-        <span className="text-[8px] opacity-70 mt-0.5">
-          {cost} Resources • {requirement.value}% {requirement.meter.substring(0,3)}
-        </span>
-      </div>
-    </button>
+    <AnimatePresence>
+      {showEvolve && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6"
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 10 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 max-w-xs w-full text-center"
+          >
+            <Crown size={28} className="text-amber-500 mx-auto mb-3" />
+            <h3 className="text-xl font-serif text-white mb-2">Ready to Evolve</h3>
+            <p className="text-sm text-slate-300 mb-4">
+              Your movement is ready to evolve into <span className="font-bold text-amber-400">{nextStage.charAt(0).toUpperCase() + nextStage.slice(1)}</span>.
+            </p>
+            <p className="text-xs text-slate-500 mb-4">
+              {cost} Resources &bull; {requirement.value}% {requirement.meter.charAt(0).toUpperCase() + requirement.meter.slice(1)}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowEvolve(false)}
+                className="flex-1 py-2 rounded-xl border border-slate-700 text-slate-400 text-xs font-bold"
+              >
+                Not Yet
+              </button>
+              <button
+                onClick={handleEvolve}
+                className="flex-1 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold"
+              >
+                Evolve
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
