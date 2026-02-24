@@ -43,6 +43,13 @@ const THEORY_ARCHIVE: Record<string, ArchiveEntry> = {
     concept: 'Max Weber & Ernst Troeltsch',
     theory: 'Religious groups exist on a spectrum of tension with the surrounding society.',
     description: 'A "Sect" maintains high tension and strict boundaries, while a "Church" (or Denomination) seeks social integration and low tension.'
+  },
+  'consecration': {
+    id: 'consecration',
+    title: 'Consecration & Setting Apart',
+    concept: 'Émile Durkheim',
+    theory: 'An object becomes sacred not through its nature, but through a social process of setting it apart.',
+    description: 'The act of consecration transforms the ordinary into the sacred through collective ritual action.'
   }
 };
 
