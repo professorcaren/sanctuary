@@ -18,7 +18,7 @@ interface Item {
 const ALL_ITEMS: Item[] = [
   { id: '1', name: 'Old Boot', type: 'profane', category: 'junk', icon: '👢', description: 'Discarded waste.' },
   { id: '2', name: 'Scripture', type: 'sacred', category: 'icon', icon: '📖', description: 'The word made manifest.' },
-  { id: '3', name: 'Wine', type: 'liminal', category: 'food', icon: '🍷', description: 'Sinful juice or holy blood?' },
+  { id: '3', name: 'Wine', type: 'liminal', category: 'food', icon: '🍷', description: 'Sacred or profane? The group decides.' },
   { id: '4', name: 'Tattered Robe', type: 'sacred', category: 'icon', icon: '👘', description: 'Worn by the founder.' },
   { id: '5', name: 'Wild Berries', type: 'liminal', category: 'food', icon: '🫐', description: 'Natures bounty.' },
   { id: '11', name: 'Dead Crow', type: 'profane', category: 'junk', icon: '🐦‍⬛', description: 'A dark omen.' },
@@ -30,7 +30,7 @@ const ALL_ITEMS: Item[] = [
   { id: '17', name: 'River Rock', type: 'profane', category: 'junk', icon: '🪨', description: 'Common earth.' },
   { id: '18', name: 'Sacred Oil', type: 'sacred', category: 'icon', icon: '🧪', description: 'For the anointing.' },
   { id: '6', name: 'Coffee Cup', type: 'liminal', category: 'modern', icon: '☕', description: 'Fuel for the faithful.' },
-  { id: '7', name: 'Gold Coin', type: 'liminal', category: 'junk', icon: '💰', description: 'Mammon or a gift?' },
+  { id: '7', name: 'Gold Coin', type: 'liminal', category: 'junk', icon: '💰', description: 'Liminal — its meaning depends on social context.' },
   { id: '8', name: 'LED Screen', type: 'profane', category: 'modern', icon: '📺', description: 'The distraction of the world.' },
   { id: '9', name: 'Credit Card', type: 'profane', category: 'modern', icon: '💳', description: 'A trap of debt.' },
   { id: '10', name: 'Electric Guitar', type: 'liminal', category: 'modern', icon: '🎸', description: 'Used for praise or vanity?' },
@@ -158,7 +158,7 @@ export const SortingGame: React.FC = () => {
           >
             <div className="text-center mb-4">
               <h2 className="text-3xl font-serif text-amber-100">Sacred Sorting</h2>
-              <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Maintain the boundary</p>
+              <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Classify the sacred and the profane</p>
             </div>
 
             <div className="w-full space-y-3 max-w-sm">
@@ -661,7 +661,7 @@ const BoundaryGame: React.FC<MiniGameProps> = ({ onComplete, activeLaws, stage }
           <div className="text-[10px] text-slate-500 font-mono">Defended: {score}</div>
           <div className="text-[10px] text-amber-500 font-mono">Spawned: {spawned} / {config.totalItems}</div>
         </div>
-        <p className="text-[10px] text-slate-600 mt-1">Tap profane items to repel them. Let sacred items reach the sanctuary.</p>
+        <p className="text-[10px] text-slate-600 mt-1">Tap profane items to repel them. Let sacred items pass through the boundary.</p>
       </div>
 
       <div className="relative" style={{ width: ARENA_SIZE, height: ARENA_SIZE }}>

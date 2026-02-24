@@ -98,7 +98,7 @@ export const RitualGame: React.FC = () => {
           >
             <div className="text-center mb-6">
               <h2 className="text-3xl font-serif text-amber-100">Sacred Ritual</h2>
-              <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Invoke the divine</p>
+              <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Generate collective effervescence</p>
             </div>
 
             <div className="w-full space-y-3 max-w-sm">
@@ -185,7 +185,7 @@ export const RitualGame: React.FC = () => {
                     <CheckCircle2 size={48} className="text-green-500" />
                   </div>
                   <h2 className="text-2xl font-serif text-white mb-2">Ritual Complete</h2>
-                  <p className="text-slate-400 text-sm mb-6">The group feels the collective surge.</p>
+                  <p className="text-slate-400 text-sm mb-6">The group experiences collective effervescence.</p>
                   <div className="bg-slate-800/50 rounded-xl p-4 mb-8 border border-slate-700">
                      <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Rewards</div>
                      <div className="text-amber-400 font-bold">+{selectedOption?.bonus} {selectedOption?.meter}</div>
@@ -201,7 +201,7 @@ export const RitualGame: React.FC = () => {
                     <XCircle size={48} className="text-red-500" />
                   </div>
                   <h2 className="text-2xl font-serif text-white mb-2">Ritual Failed</h2>
-                  <p className="text-slate-400 text-sm mb-8 leading-relaxed">The focus was broken. The energy dissipates into the void.</p>
+                  <p className="text-slate-400 text-sm mb-8 leading-relaxed">The collective focus was broken. Without synchrony, effervescence cannot emerge.</p>
                 </>
               )}
               

@@ -528,14 +528,14 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       
       // Loss Condition Checks
       if (state.meters.purity <= 0) {
-        return { ...state, isGameOver: true, gameOverReason: 'INTERNAL INFIGHTING: Your lack of purity led to a civil war within the sanctuary. The group has dissolved into bitter factions.' };
+        return { ...state, isGameOver: true, gameOverReason: 'INTERNAL SCHISM: Without clear symbolic boundaries, factional disputes have torn the group apart. As Durkheim warned, a community that cannot classify the sacred from the profane cannot hold together.' };
       }
       if (state.meters.legitimacy <= 0) {
-        const reason = state.stage === 'cult' ? 'STATE CRACKDOWN: Your radical deviation from social norms triggered an intense state response. The movement has been forcibly dismantled.' : 'STATE CRACKDOWN: Your lack of legitimacy caught the eye of the authorities. A raid has shut down your operations.';
+        const reason = state.stage === 'cult' ? 'STATE CRACKDOWN: Your high-tension stance toward society provoked an institutional response. The state has forcibly dismantled the movement.' : 'STATE CRACKDOWN: Without sufficient legitimacy, the state perceived your group as deviant. Authorities have shut down your operations.';
         return { ...state, isGameOver: true, gameOverReason: reason };
       }
       if (state.meters.awe <= 0 && state.stage !== 'movement') {
-        return { ...state, isGameOver: true, gameOverReason: 'THE FADE: Without awe, your followers have realized this is just another social club. They have drifted away to seek the truly sacred elsewhere.' };
+        return { ...state, isGameOver: true, gameOverReason: 'DESACRALIZATION: Without collective effervescence, the group has lost its sense of the sacred. Members have drifted away — just another social club.' };
       }
 
       let nextEvent = state.activeEvent;

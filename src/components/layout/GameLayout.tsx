@@ -33,32 +33,32 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
 
     // Meter warnings (highest priority)
     if (state.meters.awe < 30 && state.stage !== 'movement') {
-      if (show('hint_awe_low', 'Awe is fading. Perform the Incense ritual or buy buildings to sustain it.')) return;
+      if (show('hint_awe_low', 'Collective effervescence is fading. Perform rituals or invest in material culture to sustain Awe.')) return;
     }
     if (state.meters.purity < 30) {
-      if (show('hint_purity_low', 'Purity is dangerously low. Use Sacred Sorting to classify items and restore it.')) return;
+      if (show('hint_purity_low', 'Purity is dangerously low. Use Sacred Sorting to reinforce symbolic boundaries.')) return;
     }
     if (state.resources < 20 && state.stage !== 'movement') {
-      if (show('hint_resources_low', 'Resources are running low. Grow your flock for passive income, or recruit resource-specialty disciples.')) return;
+      if (show('hint_resources_low', 'Resources are running low. Grow the congregation for passive income, or recruit Steward disciples.')) return;
     }
 
     // Stage milestones
     if (state.stage === 'sect') {
-      if (show('hint_sect_reached', "You've formed a Sect. Boundary Maintenance is now unlocked in Sorting — it also builds Legitimacy.")) return;
+      if (show('hint_sect_reached', "You've formed a Sect — a high-tension group with strict boundaries. Boundary Maintenance is now unlocked in Sorting.")) return;
     }
     if (state.stage === 'cult') {
-      if (show('hint_cult_reached', 'The Cult path is perilous. Legitimacy decays rapidly — manage it carefully or face a state crackdown.')) return;
+      if (show('hint_cult_reached', 'The Cult path maximizes tension with society. Legitimacy decays rapidly — the state may intervene.')) return;
     }
     if (state.stage === 'congregation') {
-      if (show('hint_congregation_reached', 'Welcome to Congregation. The Admin tab is now available — approve or deny documents to build Legitimacy toward Megachurch.')) return;
+      if (show('hint_congregation_reached', 'Welcome to Congregation — low tension with society, high institutional structure. The Admin tab is now available for bureaucratic decisions.')) return;
     }
 
     // Mechanic hints
     if (state.ritualCounts && Object.values(state.ritualCounts).some((c) => (c as number) > 2)) {
-      if (show('hint_ritual_exhaustion', 'Repeating the same ritual reduces its power. Try alternating between Chant, Meditate, and Incense for full effect.')) return;
+      if (show('hint_ritual_exhaustion', 'Ritual exhaustion — repeating the same ritual reduces collective effervescence. Alternate between Chant, Meditate, and Incense.')) return;
     }
     if (state.disciples.length === 1) {
-      if (show('hint_first_disciple', "You've recruited your first disciple. Train them in the Teach tab — they provide no bonuses as novices, but become powerful when promoted.")) return;
+      if (show('hint_first_disciple', "You've recruited your first disciple. Socialize them in the Teach tab — novices must be trained into the group's worldview before they contribute.")) return;
     }
   }, [state.meters.awe, state.meters.purity, state.resources, state.stage, state.ritualCounts, state.disciples.length, state.activePrompt, state.activeEvent, state.isGameOver]);
 
@@ -93,7 +93,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ children, activeTab, onT
           <div className="mt-2 flex justify-between items-center px-1">
              <div className="text-[9px] font-mono text-slate-400 uppercase tracking-widest flex gap-3">
                <span>Resources: <span className="text-amber-400 font-bold">{state.resources}</span></span>
-               <span>Flock: <span className="text-emerald-400 font-bold">{state.congregationSize}</span></span>
+               <span>Members: <span className="text-emerald-400 font-bold">{state.congregationSize}</span></span>
              </div>
              <div className="text-[9px] font-mono text-slate-500 uppercase">
                {state.churchName || state.stage}

@@ -107,14 +107,14 @@ const TrainingSession: React.FC<{ disciple: Disciple; onClose: () => void }> = (
                 <motion.div key="good" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-amber-400">
                    <UserCheck size={64} className="mx-auto mb-4 filter drop-shadow-[0_0_10px_rgba(251,191,36,0.4)]" />
                    <div className="font-bold text-2xl uppercase tracking-tighter">Steadfast</div>
-                   <p className="text-xs text-slate-500 mt-2 max-w-[200px] mx-auto">Your consistency reinforces the Truth.</p>
+                   <p className="text-xs text-slate-500 mt-2 max-w-[200px] mx-auto">Consistency reinforces the plausibility structure.</p>
                 </motion.div>
               )}
               {state.lastTrainingResult === 'new' && (
                 <motion.div key="new" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-green-500">
                    <Sparkles size={64} className="mx-auto mb-4 filter drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
                    <div className="font-bold text-2xl uppercase tracking-tighter">New Doctrine</div>
-                   <p className="text-xs text-slate-500 mt-2">The Word is planted in fertile soil.</p>
+                   <p className="text-xs text-slate-500 mt-2">New doctrine established — the Sacred Canopy expands.</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -172,7 +172,7 @@ export const SocializationGame: React.FC = () => {
       
       <div className="mb-6 text-center shrink-0 z-10">
         <h2 className="text-3xl font-serif text-amber-100">Inner Circle</h2>
-        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-[0.3em]">Shape the future leaders</p>
+        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-[0.3em]">Transmit the Sacred Canopy</p>
       </div>
 
       <div className="flex-1 overflow-y-auto pb-20 space-y-3 z-10 pr-1">
@@ -195,7 +195,7 @@ export const SocializationGame: React.FC = () => {
           
           {state.disciples.length === 0 && (
             <div className="text-center text-slate-700 text-xs mt-12 italic px-12 leading-relaxed">
-              "A shepherd cannot watch the flock alone."<br/>Recruit from the congregation to build your hierarchy.
+              A movement needs more than a founder. Recruit from the congregation to build a hierarchy of authority.
             </div>
           )}
       </div>

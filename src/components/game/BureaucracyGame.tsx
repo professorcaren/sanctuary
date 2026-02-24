@@ -19,7 +19,7 @@ const ITEMS = ['Candlesticks', 'Veils', 'Bells', 'Robes', 'Scrolls', 'Statues', 
 const SCHOLAR_ITEMS = ['Scrolls', 'Manuscripts', 'Doctrine Books', 'Archive Cases', 'Ancient Lexicons'];
 const MYSTIC_ITEMS = ['Relics', 'Incense Burners', 'Visions Crystals', 'Sacred Masks', 'Altar Stones'];
 const ACTIONS = ['Purchase', 'Commission', 'Repair', 'Consecrate', 'Import'];
-const REASONS = ['to impress the visitors', 'for the coming festival', 'to appease the elders', 'as a sign of devotion', 'to replace the old ones'];
+const REASONS = ['to reinforce institutional legitimacy', 'for the coming collective ritual', 'to satisfy the bureaucratic hierarchy', 'as material culture for the congregation', 'to replace deteriorating sacred objects'];
 
 const recentDocTitles: string[] = [];
 
@@ -53,11 +53,11 @@ const generateDocument = (stage: string, archetype: string): Document => {
     cost: cost,
     effects: {
       approve: {
-        text: 'It shall be done.',
+        text: 'Approved — resources allocated.',
         changes: { awe: Math.floor(cost / 20), resources: -cost, legitimacy: 5 }
       },
       deny: {
-        text: 'We must be frugal.',
+        text: 'Denied — fiscal restraint prevails.',
         changes: { resources: 0, awe: -2, cohesion: 1, legitimacy: 2 }
       }
     }
@@ -101,7 +101,7 @@ export const BureaucracyGame: React.FC = () => {
       
       <div className="mb-6 text-center z-10">
         <h2 className="text-2xl font-serif text-slate-200">Bureaucracy</h2>
-        <p className="text-xs text-slate-500 mt-1">Manage the Institution</p>
+        <p className="text-xs text-slate-500 mt-1">Routinize charisma into rational-legal authority</p>
       </div>
 
       {/* Desk Surface */}

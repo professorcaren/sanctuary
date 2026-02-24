@@ -18,17 +18,17 @@ export const OracleGuide: React.FC = () => {
       case 'cult': cost = 500; req = { meter: 'cohesion', value: 80 }; next = 'Congregation'; break;
       case 'sect': cost = 500; req = { meter: 'cohesion', value: 80 }; next = 'Congregation'; break;
       case 'congregation': cost = 2000; req = { meter: 'legitimacy', value: 75 }; next = 'Megachurch'; break;
-      default: return "You have reached the final manifestation.";
+      default: return "You have reached the final stage of institutional development.";
     }
 
     const needsRes = state.resources < cost;
     const needsMeter = state.meters[req.meter] < req.value;
 
-    if (needsRes && needsMeter) return `To reach the ${next} stage, perform more rituals for Awe and resources.`;
-    if (needsRes) return `You have the spirit, but lack the means. Focus on rituals or recruit 'Steward' disciples for resources.`;
-    if (needsMeter) return `The wealth is here, but the ${req.meter} is low. ${req.meter === 'awe' ? 'Perform more rituals.' : req.meter === 'cohesion' ? 'Train your disciples.' : 'Submit legal forms in Admin.'}`;
-    
-    return `The time for evolution is near. Open the sanctuary gates.`;
+    if (needsRes && needsMeter) return `To evolve to ${next}, generate more collective effervescence through rituals and build your resource base.`;
+    if (needsRes) return `The collective energy is strong, but resources are insufficient. Focus on rituals or recruit Steward disciples.`;
+    if (needsMeter) return `Resources are sufficient, but ${req.meter} is low. ${req.meter === 'awe' ? 'Perform rituals to rebuild collective effervescence.' : req.meter === 'cohesion' ? 'Socialize your members to strengthen group bonds.' : 'Submit forms in Admin to build institutional legitimacy.'}`;
+
+    return `The conditions for institutional evolution are met. Advance to the next stage.`;
   };
 
   return (

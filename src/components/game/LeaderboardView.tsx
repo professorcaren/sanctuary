@@ -72,9 +72,9 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
       <div className={`w-full flex flex-col ${standalone ? 'max-w-lg px-6 pt-8' : 'p-6'} flex-1`}>
         <div className="mb-6 text-center shrink-0">
           <h2 className={`font-serif text-amber-100 flex items-center justify-center gap-2 ${standalone ? 'text-3xl' : 'text-2xl'}`}>
-            <Trophy className="text-amber-500" /> Hall of Manifestations
+            <Trophy className="text-amber-500" /> Hall of Movements
           </h2>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">The greatest organizations in history</p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">The most enduring religious organizations</p>
           {standalone && (
             <p className="text-[9px] text-slate-600 mt-2">Auto-refreshes every 30s</p>
           )}
@@ -84,11 +84,11 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
           {loading ? (
             <div className="flex flex-col items-center justify-center h-40 gap-4">
                <RefreshCcw className="text-amber-500 animate-spin" />
-               <p className="text-xs text-slate-600 italic">Reading the sacred scrolls...</p>
+               <p className="text-xs text-slate-600 italic">Loading...</p>
             </div>
           ) : entries.length === 0 ? (
             <div className="text-center text-slate-600 text-sm mt-12 italic">
-              No entries yet. The sacred scrolls are empty.
+              No entries yet.
             </div>
           ) : (
             entries.map((entry, idx) => (

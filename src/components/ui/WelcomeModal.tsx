@@ -9,28 +9,28 @@ const ARCHETYPES: { id: ArchetypeType; label: string; icon: any; description: st
     id: 'charismatic', 
     label: 'The Charismatic', 
     icon: <Sparkles size={18} />, 
-    description: 'A natural leader with an magnetic presence.', 
+    description: 'A natural leader whose charismatic authority draws followers.',
     bonus: 'Balanced start' 
   },
   { 
     id: 'mystic', 
     label: 'The Mystic', 
     icon: <Zap size={18} />, 
-    description: 'A visionary who speaks to the beyond.', 
+    description: 'A visionary whose ecstatic experiences generate collective effervescence.',
     bonus: '+30 Awe, -20 Legitimacy' 
   },
   { 
     id: 'scholar', 
     label: 'The Scholar', 
     icon: <BookOpen size={18} />, 
-    description: 'A deep thinker who knows the sacred texts.', 
+    description: 'A theologian who constructs the Sacred Canopy through doctrine.',
     bonus: 'Start with 2 Theories, faster Purity gain' 
   },
   { 
     id: 'administrator', 
     label: 'The Administrator', 
     icon: <Crown size={18} />, 
-    description: 'An organizer who builds lasting structures.', 
+    description: 'An organizer who routinizes charisma into lasting institutions.',
     bonus: 'Bureaucracy unlocked, +400 Resources' 
   },
 ];
@@ -63,29 +63,29 @@ export const WelcomeModal: React.FC = () => {
 
               <h2 className="text-3xl font-serif text-white mb-2">Welcome, Founder</h2>
               <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                You have been chosen to lead a new spiritual movement. Your goal is to grow from a humble "Circle of Seekers" into a global institution.
+                You are founding a new religious movement. Guide it from a small circle of seekers through the stages of institutional development — sect, congregation, megachurch.
               </p>
 
               <div className="space-y-3 mb-6 text-left">
                  <div className="flex gap-3 items-start">
                     <Zap size={16} className="text-amber-400 shrink-0 mt-0.5" />
                     <div>
-                       <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">Maintain the Sacred</div>
+                       <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">Sustain Collective Effervescence</div>
                        <div className="text-[10px] text-slate-500">Balance Awe, Purity, and Cohesion. If any hit zero, your movement collapses.</div>
                     </div>
                  </div>
                  <div className="flex gap-3 items-start">
                     <Scale size={16} className="text-blue-400 shrink-0 mt-0.5" />
                     <div>
-                       <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">Gain Legitimacy</div>
-                       <div className="text-[10px] text-slate-500">To grow, you must convince the world you are a legitimate institution.</div>
+                       <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">Build Legitimacy</div>
+                       <div className="text-[10px] text-slate-500">To evolve, you must reduce tension with the surrounding society.</div>
                     </div>
                  </div>
                  <div className="flex gap-3 items-start">
                     <Users size={16} className="text-emerald-400 shrink-0 mt-0.5" />
                     <div>
-                       <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">Evolve the Flock</div>
-                       <div className="text-[10px] text-slate-500">Train disciples and build architecture to survive the test of time.</div>
+                       <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">Routinize Charisma</div>
+                       <div className="text-[10px] text-slate-500">Socialize members, build hierarchy, and institutionalize to survive.</div>
                     </div>
                  </div>
               </div>
@@ -94,13 +94,13 @@ export const WelcomeModal: React.FC = () => {
                 onClick={() => setStep(1)}
                 className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 transition-colors shadow-lg"
               >
-                Choose Your Path
+                Select Founder
               </button>
             </motion.div>
           ) : (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                <h2 className="text-2xl font-serif text-white mb-1">Founder Background</h2>
-               <p className="text-xs text-slate-500 mb-4 uppercase tracking-widest">Tap to select your origin story</p>
+               <p className="text-xs text-slate-500 mb-4 uppercase tracking-widest">How did your movement begin?</p>
 
                <div className="space-y-2 mb-6">
                   {ARCHETYPES.map((arch) => (
@@ -133,7 +133,7 @@ export const WelcomeModal: React.FC = () => {
                 }}
                 className="w-full py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 transition-colors shadow-lg disabled:opacity-30 disabled:bg-slate-700"
               >
-                Manifest the Sanctuary
+                Found the Movement
               </button>
             </motion.div>
           )}

@@ -89,7 +89,7 @@ export const GameOverModal: React.FC = () => {
               <Skull size={40} className="text-red-500" />
             </div>
 
-            <h2 className="text-3xl font-serif text-white mb-4">The End</h2>
+            <h2 className="text-3xl font-serif text-white mb-4">Dissolution</h2>
             
             <p className="text-slate-400 text-sm mb-6 leading-relaxed">
               {state.gameOverReason}
@@ -142,7 +142,7 @@ export const GameOverModal: React.FC = () => {
                 onClick={() => dispatch({ type: 'RESET_GAME', traits: selectedTraits })}
                 className="w-full py-4 bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors shadow-lg"
               >
-                <RefreshCw size={18} /> Resurrect Group
+                <RefreshCw size={18} /> Start New Movement
               </button>
 
               <div className="grid grid-cols-2 gap-2">

@@ -35,9 +35,9 @@ export const NamingModal: React.FC = () => {
             <PenTool size={32} className="text-amber-500" />
           </div>
 
-          <h2 className="text-3xl font-serif text-white mb-2">A New Era</h2>
+          <h2 className="text-3xl font-serif text-white mb-2">Institutionalization</h2>
           <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-            Your movement has grown beyond its informal roots. It is time to name your manifestation. How shall the world know you?
+            Your movement has grown beyond its informal roots. As Weber observed, charisma must be routinized. Name your organization.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -56,7 +56,7 @@ export const NamingModal: React.FC = () => {
               type="submit"
               className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-amber-500 transition-colors shadow-lg disabled:opacity-50"
             >
-              <Check size={18} /> Seal the Name
+              <Check size={18} /> Establish the Name
             </button>
           </form>
         </motion.div>

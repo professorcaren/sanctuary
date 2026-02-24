@@ -38,7 +38,7 @@ export const ArchiveView: React.FC = () => {
         <h2 className="text-2xl font-serif text-amber-100 flex items-center justify-center gap-2">
           <Book className="text-amber-500" /> Web of Knowledge
         </h2>
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Discover the connections between society's secrets</p>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Explore the sociological theories behind your movement</p>
       </div>
 
       {/* The Web Visualizer */}
@@ -116,7 +116,7 @@ export const ArchiveView: React.FC = () => {
       {state.archive.length === 0 && (
         <div className="mt-4 text-center px-12 animate-pulse pointer-events-none shrink-0">
           <p className="text-[10px] text-slate-600 uppercase tracking-widest italic">
-            Perform rituals and teach the flock to manifest the web
+            Perform rituals and socialize members to unlock theories
           </p>
         </div>
       )}

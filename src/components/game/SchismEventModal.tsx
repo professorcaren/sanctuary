@@ -60,7 +60,7 @@ export const SchismEventModal: React.FC = () => {
           
           <div className="flex items-center gap-3 mb-4 text-red-500">
             <AlertTriangle size={24} />
-            <h3 className="text-lg font-bold uppercase tracking-wider">Crisis Event</h3>
+            <h3 className="text-lg font-bold uppercase tracking-wider">Institutional Crisis</h3>
           </div>
 
           <h2 className="text-xl font-serif text-slate-100 mb-2">{event.title}</h2>
