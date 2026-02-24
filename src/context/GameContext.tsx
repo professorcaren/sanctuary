@@ -475,17 +475,30 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         }
       });
 
-      // Secularization Challenge
-      let secularDecay = 0.1 + (state.meters.legitimacy / 400);
+      // Secularization Challenge — scales with stage
+      const stageMultiplier = state.stage === 'movement' ? 1 : state.stage === 'sect' ? 1.5 : state.stage === 'cult' ? 1.8 : state.stage === 'denomination' ? 2.2 : 3;
+      let secularDecay = (0.15 + (state.meters.legitimacy / 300)) * stageMultiplier;
+
+      // Purity decay — larger congregations are harder to keep pure
+      let purityDecay = 0.05 + (state.congregationSize / 500);
+
+      // Cohesion decay — entropy, larger groups fragment
+      let cohesionDecay = 0.05 + (state.congregationSize / 300);
+
       let cultLegitimacyDecay = 0;
       let cultAweBonus = 0;
       let cultCohesionBonus = 0;
+      let legitimacyDecay = 0;
 
       if (state.stage === 'cult') {
         cultLegitimacyDecay = 0.5; // Rapid decay
         cultAweBonus = 0.3;        // Intense focus
         cultCohesionBonus = 0.2;   // Total institution effect
       }
+
+      // Public scrutiny in later stages
+      if (state.stage === 'denomination') legitimacyDecay = 0.15;
+      if (state.stage === 'megachurch') legitimacyDecay = 0.3;
 
       const buildingBonus = state.buildings.length * 0.05;
 
@@ -566,9 +579,9 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         meters: {
             ...state.meters,
             awe: Math.max(0, Math.min(100, state.meters.awe - secularDecay + discipleAwe + buildingBonus + cultAweBonus)),
-            purity: Math.max(0, Math.min(100, state.meters.purity + disciplePurity + scholarPurityBonus)),
-            legitimacy: Math.max(0, Math.min(100, state.meters.legitimacy - cultLegitimacyDecay)),
-            cohesion: Math.max(0, Math.min(100, state.meters.cohesion + cultCohesionBonus))
+            purity: Math.max(0, Math.min(100, state.meters.purity - purityDecay + disciplePurity + scholarPurityBonus)),
+            legitimacy: Math.max(0, Math.min(100, state.meters.legitimacy - cultLegitimacyDecay - legitimacyDecay)),
+            cohesion: Math.max(0, Math.min(100, state.meters.cohesion - cohesionDecay + cultCohesionBonus))
         }
       };
     default:
