@@ -160,7 +160,7 @@ export const RitualGame: React.FC = () => {
 
             {selectedOption?.mode === 'rhythm' && <RhythmGame onComplete={handleComplete} isSacred={isSacred} />}
             {selectedOption?.mode === 'sequence' && <SequenceGame onComplete={handleComplete} isSacred={isSacred} />}
-            {selectedOption?.mode === 'focus' && <FocusGame onComplete={handleComplete} isSacred={isSacred} />}
+            {selectedOption?.mode === 'focus' && <BreathGame onComplete={handleComplete} isSacred={isSacred} />}
             
             <button
               onClick={() => setPhase('prep')}
@@ -434,85 +434,167 @@ const SequenceGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: bool
   );
 };
 
-const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
+const BreathGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean }> = ({ onComplete, isSacred }) => {
   const { state } = useGame();
-  const [holdTime, setHoldTime] = useState(0);
+  const [isActive, setIsActive] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
-  const [drift, setDrift] = useState(50);
-  const requestRef = useRef<number | null>(null);
-  const holdTimeRef = useRef(0);
-  const isHoldingRef = useRef(false);
-  const onCompleteRef = useRef(onComplete);
+  const [focus, setFocus] = useState(100);
+  const [breathCount, setBreathCount] = useState(0);
+  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
 
-  const BASE_INTENSITY = useMemo(() => {
+  const isHoldingRef = useRef(false);
+  const focusRef = useRef(100);
+  const breathCountRef = useRef(0);
+  const phaseRef = useRef<'inhale' | 'exhale'>('inhale');
+  const startTimeRef = useRef<number | null>(null);
+  const onCompleteRef = useRef(onComplete);
+  const doneRef = useRef(false);
+
+  const { totalBreaths, drainRate, recoverRate } = useMemo(() => {
     switch (state.stage) {
-      case 'movement': return 2;
-      case 'cult': return 4;
-      case 'sect': return 4;
-      case 'denomination': return 5;
-      case 'megachurch': return 6;
-      default: return 4;
+      case 'movement': return { totalBreaths: 4, drainRate: 0.3, recoverRate: 0.15 };
+      case 'cult': return { totalBreaths: 5, drainRate: 0.5, recoverRate: 0.12 };
+      case 'sect': return { totalBreaths: 5, drainRate: 0.5, recoverRate: 0.12 };
+      case 'denomination': return { totalBreaths: 6, drainRate: 0.7, recoverRate: 0.08 };
+      case 'megachurch': return { totalBreaths: 7, drainRate: 0.9, recoverRate: 0.05 };
+      default: return { totalBreaths: 5, drainRate: 0.5, recoverRate: 0.12 };
     }
   }, [state.stage]);
 
-  const TARGET_TIME = 600;
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => { isHoldingRef.current = isHolding; }, [isHolding]);
+  useEffect(() => { focusRef.current = focus; }, [focus]);
+  useEffect(() => { breathCountRef.current = breathCount; }, [breathCount]);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
 
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
+  const CYCLE_MS = 4000; // 2s inhale + 2s exhale
 
-  useEffect(() => {
-    isHoldingRef.current = isHolding;
-  }, [isHolding]);
+  useAnimationFrame((time) => {
+    if (!isActive || doneRef.current) return;
+    if (startTimeRef.current === null) startTimeRef.current = time;
 
-  useEffect(() => {
-    holdTimeRef.current = holdTime;
-  }, [holdTime]);
+    const elapsed = time - startTimeRef.current;
+    const cycleProgress = (elapsed % CYCLE_MS) / CYCLE_MS; // 0..1
+    const currentPhase: 'inhale' | 'exhale' = cycleProgress < 0.5 ? 'inhale' : 'exhale';
 
-  const animate = () => {
-    if (isHoldingRef.current) {
-      if (holdTimeRef.current % 120 === 0 && window.navigator.vibrate) window.navigator.vibrate(10);
-      setHoldTime(prev => {
-        const next = prev + 1;
-        holdTimeRef.current = next;
-        if (next >= TARGET_TIME) { onCompleteRef.current(true); return TARGET_TIME; }
+    // Detect breath completion (transition from exhale back to inhale)
+    if (phaseRef.current === 'exhale' && currentPhase === 'inhale') {
+      const next = breathCountRef.current + 1;
+      if (next >= totalBreaths) {
+        doneRef.current = true;
+        onCompleteRef.current(true);
+        return;
+      }
+      setBreathCount(next);
+    }
+
+    setPhase(currentPhase);
+
+    // Check sync: holding during inhale = good, releasing during exhale = good
+    const inSync = (currentPhase === 'inhale' && isHoldingRef.current) ||
+                   (currentPhase === 'exhale' && !isHoldingRef.current);
+
+    if (inSync) {
+      setFocus(prev => Math.min(100, prev + recoverRate));
+    } else {
+      setFocus(prev => {
+        const next = prev - drainRate;
+        if (next <= 0) {
+          doneRef.current = true;
+          onCompleteRef.current(false);
+          return 0;
+        }
         return next;
       });
-      setDrift(prev => prev + (50 - prev) * 0.05);
-    } else {
-      const intensity = BASE_INTENSITY + (holdTimeRef.current / 100);
-      setDrift(prev => prev + (Math.random() - 0.5) * intensity);
     }
-    requestRef.current = requestAnimationFrame(animate);
-  };
+  });
 
-  useEffect(() => {
-    requestRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(requestRef.current!);
-  }, []);
+  // Circle scale: 0.6 exhaled, 1.2 inhaled
+  const circleScale = useMemo(() => {
+    if (!isActive) return 0.6;
+    return phase === 'inhale' ? 1.2 : 0.6;
+  }, [isActive, phase]);
 
-  useEffect(() => {
-    if (drift < 10 || drift > 90) onCompleteRef.current(false);
-  }, [drift]);
+  const inSync = isActive && (
+    (phase === 'inhale' && isHolding) || (phase === 'exhale' && !isHolding)
+  );
 
   return (
-    <div className="w-full flex flex-col items-center gap-8">
-      <div className="text-center">
-        <div className="text-3xl font-black text-amber-500 tracking-tighter">{Math.floor((holdTime / TARGET_TIME) * 100)}%</div>
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Ritual Focus</p>
+    <div className="w-full flex flex-col items-center gap-5">
+      {/* Focus bar */}
+      <div className="w-full max-w-[200px]">
+        <div className="flex justify-between mb-1">
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Focus</span>
+          <span className="text-[10px] text-slate-500 font-bold">{Math.round(focus)}%</span>
+        </div>
+        <div className="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+          <motion.div
+            className="h-full rounded-full"
+            animate={{
+              width: `${focus}%`,
+              backgroundColor: focus > 50 ? '#f59e0b' : focus > 25 ? '#f97316' : '#ef4444',
+            }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
       </div>
 
-      <div className="w-full max-w-[200px] h-4 bg-slate-900 rounded-full relative overflow-hidden border border-slate-800">
-        <motion.div className="absolute top-0 bottom-0 w-4 bg-amber-500 shadow-[0_0_15px_#f59e0b]" style={{ left: `${drift}%` }} />
-        <div className="absolute inset-0 flex justify-center"><div className="w-0.5 h-full bg-slate-700" /></div>
+      {/* Breathing circle */}
+      <div className="relative w-48 h-48 flex items-center justify-center">
+        {/* Glow ring when in sync */}
+        {isActive && inSync && (
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            animate={{ scale: circleScale, opacity: 0.3 }}
+            transition={{ duration: 2, ease: 'easeInOut' }}
+            style={{ boxShadow: '0 0 40px rgba(251,191,36,0.5)' }}
+          />
+        )}
+        {/* Main breathing circle */}
+        <motion.div
+          className={`absolute rounded-full border-2 ${inSync ? 'border-amber-400 bg-amber-500/20' : 'border-slate-700 bg-slate-800/30'}`}
+          animate={{
+            scale: circleScale,
+            width: 160,
+            height: 160,
+          }}
+          transition={{ duration: 2, ease: 'easeInOut' }}
+          style={{ originX: 0.5, originY: 0.5 }}
+        />
+
+        {/* Phase label */}
+        <div className="relative z-10 text-center">
+          {!isActive ? (
+            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest animate-pulse">Hold to Begin</p>
+          ) : (
+            <motion.p
+              key={phase}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`text-sm font-serif tracking-wide ${inSync ? 'text-amber-300' : 'text-slate-500'}`}
+            >
+              {phase === 'inhale' ? 'Inhale...' : 'Exhale...'}
+            </motion.p>
+          )}
+        </div>
       </div>
 
+      {/* Fingerprint hold button */}
       <motion.button
-        onPointerDown={() => setIsHolding(true)}
+        onPointerDown={() => {
+          setIsHolding(true);
+          if (!isActive) setIsActive(true);
+        }}
         onPointerUp={() => setIsHolding(false)}
         onPointerLeave={() => setIsHolding(false)}
-        animate={{ scale: isHolding ? 0.9 : 1, backgroundColor: isHolding ? '#f59e0b' : '#0f172a' }}
-        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none relative overflow-hidden touch-none"
+        onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setIsHolding(true); if (!isActive) setIsActive(true); } }}
+        onKeyUp={(e) => { if (e.key === ' ' || e.key === 'Enter') setIsHolding(false); }}
+        animate={{
+          scale: isHolding ? 0.9 : 1,
+          backgroundColor: isHolding ? '#f59e0b' : '#0f172a',
+          borderColor: isHolding ? '#fbbf24' : '#1e293b',
+        }}
+        className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center text-amber-500 shadow-2xl active:shadow-none relative overflow-hidden touch-none outline-none"
       >
         <Fingerprint size={48} />
         {isHolding && (
@@ -525,7 +607,11 @@ const FocusGame: React.FC<{ onComplete: (s: boolean) => void, isSacred?: boolean
         )}
       </motion.button>
 
-      <p className="text-[10px] text-slate-600 uppercase tracking-widest animate-pulse font-bold">Hold to Center</p>
+      {/* Breath counter */}
+      <div className="text-center">
+        <div className="text-3xl font-black text-amber-500 tracking-tighter">{breathCount} / {totalBreaths}</div>
+        <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">Breaths</p>
+      </div>
     </div>
   );
 };
