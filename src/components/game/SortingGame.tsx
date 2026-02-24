@@ -52,10 +52,23 @@ interface Law {
 }
 
 const LAWS: Law[] = [
+  // Food
   { id: 'fast', title: 'The Great Fast', description: 'The body is a temple — stop feeding it. All Food is Profane.', check: (i) => i.category === 'food' ? 'profane' : null },
-  { id: 'modernity', title: 'The Luddite Law', description: 'If it has a plug, it has a demon. All Modern objects are Profane.', check: (i) => i.category === 'modern' ? 'profane' : null },
-  { id: 'celebration', title: 'The Feast', description: 'Every meal is communion now. All Food is Sacred.', check: (i) => i.category === 'food' ? 'sacred' : null },
+  { id: 'feast', title: 'The Feast', description: 'Every meal is communion now. All Food is Sacred.', check: (i) => i.category === 'food' ? 'sacred' : null },
+  // Icons
   { id: 'iconoclasm', title: 'Iconoclasm', description: 'Smash the idols — beauty is a trap. All Icons are Profane.', check: (i) => i.category === 'icon' ? 'profane' : null },
+  { id: 'veneration', title: 'Veneration', description: 'Every symbol is a window to the divine. All Icons are Sacred.', check: (i) => i.category === 'icon' ? 'sacred' : null },
+  // Modern
+  { id: 'luddite', title: 'The Luddite Law', description: 'If it has a plug, it has a demon. All Modern objects are Profane.', check: (i) => i.category === 'modern' ? 'profane' : null },
+  { id: 'technophilia', title: 'The Prosperity Gospel', description: 'God wants you to have nice things. All Modern objects are Sacred.', check: (i) => i.category === 'modern' ? 'sacred' : null },
+  // Junk
+  { id: 'asceticism', title: 'Radical Asceticism', description: 'Possessions are spiritual poison. All Junk is Profane.', check: (i) => i.category === 'junk' ? 'profane' : null },
+  { id: 'relics', title: 'Holy Relics', description: 'One person\'s trash is another\'s relic. All Junk is Sacred.', check: (i) => i.category === 'junk' ? 'sacred' : null },
+  // Type-based
+  { id: 'purity_crusade', title: 'The Purity Crusade', description: 'When in doubt, cast it out. All Liminal items are Profane.', check: (i) => i.type === 'liminal' ? 'profane' : null },
+  { id: 'radical_grace', title: 'Radical Grace', description: 'Nothing is unclean to the enlightened. All Liminal items are Sacred.', check: (i) => i.type === 'liminal' ? 'sacred' : null },
+  { id: 'inversion', title: 'The Great Inversion', description: 'What was trash is now treasure. All Profane items are Sacred.', check: (i) => i.type === 'profane' ? 'sacred' : null },
+  { id: 'suspicion', title: 'The Age of Suspicion', description: 'Trust nothing that glitters. All Sacred items are Profane.', check: (i) => i.type === 'sacred' ? 'profane' : null },
 ];
 
 const ITEMS_PER_SESSION = 10;
@@ -115,14 +128,8 @@ export const SortingGame: React.FC = () => {
       if (state.sortingLaws !== null) {
         setActiveLaws(LAWS.filter(l => state.sortingLaws!.includes(l.id)));
       } else {
-        const newLaws: Law[] = [];
-        if (Math.random() < 0.5) {
-          newLaws.push(LAWS[Math.floor(Math.random() * LAWS.length)]);
-          if (Math.random() < 0.3) {
-            const second = LAWS[Math.floor(Math.random() * LAWS.length)];
-            if (second.id !== newLaws[0].id) newLaws.push(second);
-          }
-        }
+        const picked = LAWS[Math.floor(Math.random() * LAWS.length)];
+        const newLaws: Law[] = [picked];
         setActiveLaws(newLaws);
         dispatch({ type: 'SET_SORTING_LAWS', laws: newLaws.map(l => l.id) });
       }
