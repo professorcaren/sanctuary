@@ -17,13 +17,14 @@ function doPost(e) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     var data = JSON.parse(e.postData.contents);
     
-    // Appends: [Timestamp, Name, Stage, Members, Resources]
+    // Appends: [Timestamp, Name, Stage, Members, Resources, Onyen]
     sheet.appendRow([
-      new Date(), 
-      data.name, 
-      data.stage, 
-      data.members, 
-      data.resources
+      new Date(),
+      data.name,
+      data.stage,
+      data.members,
+      data.resources,
+      data.onyen || ''
     ]);
     
     return ContentService.createTextOutput("Success")

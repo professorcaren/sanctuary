@@ -15,6 +15,7 @@ export const GameOverModal: React.FC = () => {
   const { state, dispatch } = useGame();
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [onyen, setOnyen] = useState('');
   const [showHall, setShowHall] = useState(false);
 
   const points = state.archive.length;
@@ -45,7 +46,8 @@ export const GameOverModal: React.FC = () => {
         name: state.churchName || 'Unnamed',
         stage: state.stage,
         members: state.congregationSize,
-        resources: state.resources
+        resources: state.resources,
+        onyen: onyen.trim() || ''
       })
     });
 
@@ -122,6 +124,19 @@ export const GameOverModal: React.FC = () => {
                </div>
             </div>
 
+            {state.churchName && !submitted && (
+              <div className="mb-4">
+                <label className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1 block">Onyen (optional)</label>
+                <input
+                  type="text"
+                  value={onyen}
+                  onChange={(e) => setOnyen(e.target.value)}
+                  placeholder="Your onyen"
+                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <button
                 onClick={() => dispatch({ type: 'RESET_GAME', traits: selectedTraits })}
@@ -129,7 +144,7 @@ export const GameOverModal: React.FC = () => {
               >
                 <RefreshCw size={18} /> Resurrect Group
               </button>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setShowHall(true)}
