@@ -56,7 +56,7 @@ export const LeaderboardView: React.FC<{ standalone?: boolean }> = ({ standalone
           return b.members - a.members;
         });
 
-      setEntries(parsed);
+      setEntries(parsed.slice(0, 50));
     } catch (err) {
       console.error("Failed to fetch leaderboard", err);
     }

@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
-import { Zap, Users, Scale, Shield, Coins } from 'lucide-react';
+import { Zap, Users, Scale, Shield, Coins, Trophy } from 'lucide-react';
+import { LeaderboardView } from '../game/LeaderboardView';
 
 export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { state } = useGame();
+  const [showLeaderboard, setShowLeaderboard] = React.useState(false);
 
   const STATS = [
     {
@@ -52,19 +54,24 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={onClose}
+        onClick={() => { onClose(); setShowLeaderboard(false); }}
         className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
       >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
-          onClick={onClose}
+          onClick={(e) => e.stopPropagation()}
           className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl relative my-auto"
         >
-          <h3 className="text-lg font-serif text-amber-100 mb-4 flex items-center gap-2">
-            Sociological Indicators
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-serif text-amber-100">
+              Sociological Indicators
+            </h3>
+            <button onClick={onClose} className="text-slate-600 hover:text-slate-400 text-xs uppercase tracking-widest">
+              Close
+            </button>
+          </div>
 
           <div className="space-y-4">
             {STATS.map(stat => (
@@ -88,9 +95,18 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-800">
-             <p className="text-[9px] text-slate-600 text-center uppercase tracking-[0.2em]">
-               Tap anywhere to dismiss
-             </p>
+            {showLeaderboard ? (
+              <div className="h-64 overflow-y-auto -mx-2 rounded-xl">
+                <LeaderboardView />
+              </div>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowLeaderboard(true); }}
+                className="w-full py-2.5 flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-amber-400 transition-colors"
+              >
+                <Trophy size={14} /> View Leaderboard
+              </button>
+            )}
           </div>
         </motion.div>
       </motion.div>
