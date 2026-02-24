@@ -59,7 +59,7 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={onClose}
           className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl relative my-auto"
         >
           <h3 className="text-lg font-serif text-amber-100 mb-4 flex items-center gap-2">
