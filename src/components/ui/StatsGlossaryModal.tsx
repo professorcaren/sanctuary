@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGame } from '../../context/GameContext';
-import { Zap, Users, Scale, Shield, X, Coins } from 'lucide-react';
+import { Zap, Users, Scale, Shield, Coins } from 'lucide-react';
 
 export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { state } = useGame();
@@ -52,31 +52,29 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-6"
+        onClick={onClose}
+        className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
       >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
-          className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+          onClick={(e) => e.stopPropagation()}
+          className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl relative my-auto"
         >
-          <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white p-2">
-            <X size={20} />
-          </button>
-
-          <h3 className="text-xl font-serif text-amber-100 mb-6 flex items-center gap-2">
+          <h3 className="text-lg font-serif text-amber-100 mb-4 flex items-center gap-2">
             Sociological Indicators
           </h3>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {STATS.map(stat => (
-              <div key={stat.id} className="flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+              <div key={stat.id} className="flex gap-3 items-start">
+                <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
                   {stat.icon}
                 </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-slate-200">{stat.label}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <span className="font-bold text-sm text-slate-200">{stat.label}</span>
                     <span className="font-mono text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                       {stat.isRaw ? Math.round(stat.value) : `${Math.round(stat.value)}%`}
                     </span>
@@ -89,9 +87,9 @@ export const StatsGlossaryModal: React.FC<{ isOpen: boolean; onClose: () => void
             ))}
           </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-800">
+          <div className="mt-4 pt-4 border-t border-slate-800">
              <p className="text-[9px] text-slate-600 text-center uppercase tracking-[0.2em]">
-               Balance these forces to survive
+               Tap anywhere to dismiss
              </p>
           </div>
         </motion.div>
